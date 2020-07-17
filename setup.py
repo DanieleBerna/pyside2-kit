@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="pyside2-kit",
+    name="pyside2kit",
     version="0.0.1",
     author="Daniele Bernardini",
     author_email="bdcreations@gmail.com",
@@ -18,7 +18,7 @@ setuptools.setup(
     # Package Data
     include_package_data=True,
     package_data={
-        'pyside2-kit': ["resources/*.png", "resources/*.txt"]
+        'pyside2kit': ["resources/*.png", "resources/*.txt"]
     },
     classifiers=[
         "Programming Language :: Python :: 3",
