@@ -2,6 +2,7 @@
 import sys
 import os
 from PySide2 import QtWidgets
+from functools import partial
 
 
 def run_demo():
@@ -17,7 +18,21 @@ def run_demo():
     demo_layout.addWidget(change_palette_btn)
     change_labels_btn = QtWidgets.QPushButton("Change palette labels")
     demo_layout.addWidget(change_labels_btn)
+
+    my_list = ps2kit.QCheckableList("Items", ("item1", "item2", "item3", "item4", "item5", "item6"))
+    demo_layout.addWidget(my_list)
+
+    test_button = QtWidgets.QPushButton("Button")
+
+    def update():
+        my_list.items = my_list.items[::-1]
+        my_list.update_items()
+
+    test_button.clicked.connect(partial(my_list.update_items, ("test1", "test2", "test3", "test4", "test5")))
+    demo_layout.addWidget(test_button)
     demo_window.setLayout(demo_layout)
+
+
 
     demo_window.show()
     sys.exit(app.exec_())

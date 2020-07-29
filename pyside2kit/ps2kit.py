@@ -118,3 +118,97 @@ class QTexturePalette(QtWidgets.QGroupBox):
     def change_labels(self, button_labels_filename):
         pass
 
+
+class QCheckableList(QtWidgets.QWidget):
+    """
+        Extends QWidget to create a clickable palette.
+        A QCheckableList object is composed by a group and a QTreeWidget used as list of items, each with a checkbox.
+        """
+    def __init__(self, title, items=(), show_buttons=True):
+        super(QCheckableList, self).__init__()
+
+        self.items = items
+
+        layout = QtWidgets.QGridLayout(self)
+
+        group = QtWidgets.QGroupBox(title)
+        group_layout = QtWidgets.QVBoxLayout(group)
+        layout.addWidget(group, 0, 0, 3, 3)
+
+        if show_buttons:
+            selection_buttons_layout = QtWidgets.QHBoxLayout()
+            self.select_all_btn = QtWidgets.QPushButton("All")
+            self.select_all_btn.clicked.connect(partial(self.set_items_status, True))
+            selection_buttons_layout.addWidget(self.select_all_btn)
+            self.select_none_btn = QtWidgets.QPushButton("None")
+            self.select_none_btn.clicked.connect(partial(self.set_items_status, False))
+            selection_buttons_layout.addWidget(self.select_none_btn)
+            group_layout.addLayout(selection_buttons_layout)
+
+        tree = self.tree = QtWidgets.QTreeWidget()
+        tree.setHeaderHidden(True)
+        group_layout.addWidget(tree)
+
+        for i in self.items:
+            item = QtWidgets.QTreeWidgetItem()
+            item.setText(0, i)
+            item.setCheckState(0, QtCore.Qt.Unchecked)
+            tree.addTopLevelItem(item)
+
+    def set_items_status(self, checked):
+        for i in range(self.tree.topLevelItemCount()):
+            item = self.tree.topLevelItem(i)
+            if checked:
+                item.setCheckState(0, QtCore.Qt.Checked)
+            else:
+                item.setCheckState(0, QtCore.Qt.Unchecked)
+
+    def get_selected_items(self):
+        root = self.tree.invisibleRootItem()
+        selected_items = []
+        selected_items_texts = []
+        for i in range(root.childCount()):
+            item = root.child(i)
+            if item.checkState(0):
+                selected_items.append(item)
+                selected_items_texts.append(item.text(0))
+
+        return selected_items, selected_items_texts
+
+    @Slot(tuple)
+    def update_items(self, new_items):
+        root = self.tree.invisibleRootItem()
+        for item in root.takeChildren():
+            root.removeChild(item)
+
+        self.items = new_items[:]
+        for i in self.items:
+            item = QtWidgets.QTreeWidgetItem()
+            item.setText(0, i)
+            item.setCheckState(0, QtCore.Qt.Unchecked)
+            self.tree.addTopLevelItem(item)
+
+
+class QButtonLineEdit(QtWidgets.QLineEdit):
+    buttonClicked = Signal(bool)
+
+    def __init__(self, parent=None):
+        super(QButtonLineEdit, self).__init__(parent)
+
+        self.button = QtWidgets.QPushButton(self, "Prova")
+        self.button.setCursor(QtCore.Qt.ArrowCursor)
+        self.button.clicked.connect(self.buttonClicked.emit)
+
+        frameWidth = self.style().pixelMetric(QtCore.QStyle.PM_DefaultFrameWidth)
+        buttonSize = self.button.sizeHint()
+
+        self.setStyleSheet('QLineEdit {padding-right: %dpx; }' % (buttonSize.width() + frameWidth + 1))
+        self.setMinimumSize(max(self.minimumSizeHint().width(), buttonSize.width() + frameWidth*2 + 2),
+                            max(self.minimumSizeHint().height(), buttonSize.height() + frameWidth*2 + 2))
+
+    def resizeEvent(self, event):
+        buttonSize = self.button.sizeHint()
+        frameWidth = self.style().pixelMetric(QtCore.QStyle.PM_DefaultFrameWidth)
+        self.button.move(self.rect().right() - frameWidth - buttonSize.width(),
+                         (self.rect().bottom() - buttonSize.height() + 1)/2)
+        super(QButtonLineEdit, self).resizeEvent(event)
