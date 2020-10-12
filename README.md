@@ -2,15 +2,16 @@
 **A kit of pre-made objects for your PySide 2 user interfaces**
 
 ## Introduction
-While writing some tools I found myself building some _complex_ part of the UIs that could be used in other projects.
+While writing my small tools I found myself building some parts of the UIs that could be used in other projects.
 So instead of _reinventig the wheel_ I thought to create a ps2kit.py module containing all of them.
 
-It's an ongoing process since I plan to add objects to the module as soon as they pops out in another project.
+It's an ongoing process: I plan to add objects to the module as soon as they pops out in another project.
 
 All objects are classes that extend some other standard PySide2 class (I think they'll be some kind of QWidget in 99% of the cases)
 
 ## Demo script
 Run demo.py to open a showcase window.
+**NOTE** At the moment the *Change palette image* works only the first time (still have to cycle between template images) and *Change palette labels* is deactivated because the function is not implemented yet.
 
 ## Module content
 ### QTexturePalette
