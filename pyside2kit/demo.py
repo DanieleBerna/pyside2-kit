@@ -27,6 +27,7 @@ def run_demo():
     change_palette_btn.clicked.connect(lambda: my_palette.change_image(os.path.join(os.path.dirname(__file__), "resources", "palette_02.png")))
     change_labels_btn = QtWidgets.QPushButton("Change palette labels")
     demo_layout.addWidget(change_labels_btn)
+    change_labels_btn.setEnabled(False)
 
     my_list = ps2kit.QCheckableList("Items", ("item1", "item2", "item3", "item4", "item5", "item6"))
     demo_layout.addWidget(my_list)
