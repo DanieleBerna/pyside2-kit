@@ -1,43 +1,58 @@
-__version__ = '0.1'
-__author__ = 'Daniele Bernardini'
+# -*- coding: utf-8 -*-
+
+"""
+ps2kit is a module containing pre-built PySide2 objects useful for creating more complex UI
+Each object is built on standard PySide2 classes like QWidget.
+
+"""
+
+from functools import partial
 
 from PySide2 import QtWidgets, QtCore
 from PySide2.QtCore import Signal, Slot
-from functools import partial
 
 
 class QTexturePalette(QtWidgets.QGroupBox):
     """
     Extends QGroupBox to create a clickable palette.
-    A QTexturePalette object is composed by a group and a grid of transparent QPushButton overlayed to an image.
+    A QTexturePalette object is composed by a group and a grid of transparent QPushButton overlaid to an image.
     """
-    button_pressed = Signal(str, float, bool, bool, bool)  # Signal emitted when any button is pressed
+    button_pressed = Signal(str, float, bool, bool, bool)  # Signal emitted when a button is pressed
+    """
+    Signal arguments:
+    (str) palette name, (float) value associated to the button, (bool) is Alt pressed, (bool)is Shift pressed, (bool)is Ctrl pressed
+    """
 
     @Slot(float, int)
     def press_button(self, button_value, button_index):
         """
         Slot function connected to the clicked signal of the QPushButtons in the grid.
-        It emits another signal to the application containing all the informations about the interaction happened.
+        It emits another signal to the main application/UI together with all the information about the interaction happened.
         :param button_value: the specific value associate do the pressed button
+        :param button_index: list index of the pressed button
         """
-        self.last_pressed_button_index = button_index
+        self.last_pressed_button_index = button_index  # Needed to highlight the last button
         self.button_pressed.emit(self.palette_name, button_value,
                                  (QtWidgets.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier),
                                  (QtWidgets.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier),
                                  (QtWidgets.QApplication.keyboardModifiers() == QtCore.Qt.ControlModifier))
 
-    def __init__(self, palette_name="", grid_side=4, image_path="", palette_size=800, button_labels_filename=None):
+    def __init__(self, palette_name="", grid_side=4, image_filename="", button_labels_filename=None, palette_size=800, buttons_tooltip="Tooltip"):
         """
         Setup the palette object generating the QPushButton grid
-        :param palette_name: name of the palette and of the group
-        :param grid_side: number of cells/button per side (assuming a grid_side x grid_side palette)
-        :param image_path: filepath of the image to be used
+        :param palette_name: name of the palette: it will shown as group name too
+        :param grid_side: number of cells/button per side (assuming a squared grid_side x grid_side palette)
+        :param image_filename: full filename with path of the image to be used as palette background
+        :param button_labels_filename: full filename with path of the optional text file containing buttons' labels
         :param palette_size: size in pixel of the widget
+        :param buttons_tooltip: tooltip text for the buttons (note: same for all)
         """
-        image_path = image_path.replace("\\", "/")
+        image_filename = image_filename.replace("\\", "/")  # Needed because path ends in a stylesheet
         if button_labels_filename is not None:
-            button_labels_filename = button_labels_filename.replace("\\", "/")
+            button_labels_filename = button_labels_filename.replace("\\", "/")  # Needed because path ends in a stylesheet
+
         super(QTexturePalette, self).__init__(palette_name)
+
         self.palette_name = palette_name
         self.palette_group_layout = QtWidgets.QHBoxLayout()
         self.palette_frame = QtWidgets.QFrame()
@@ -54,10 +69,10 @@ class QTexturePalette(QtWidgets.QGroupBox):
         self.palette_buttons_group = QtWidgets.QButtonGroup()
         self.palette_buttons_group.setExclusive(True)
 
+        # Here a size multiplier is computed for screen resolutions < 4k. Used for scale fonts and widgets
         temp_app = QtWidgets.QApplication.instance()
         if temp_app is None:
-            # if it does not exist then a QApplication is created
-            temp_app = QtWidgets.QApplication([])
+            temp_app = QtWidgets.QApplication([])  # if it does not exist then a QApplication is created
         self.screen_factor = (2160/temp_app.primaryScreen().size().height())
 
         # Initialize button labels list reading labels from a given txt file
@@ -87,7 +102,7 @@ class QTexturePalette(QtWidgets.QGroupBox):
                 temp_label.setWordWrap(True)
                 temp_btn = QtWidgets.QPushButton("")
 
-                temp_btn.setToolTip("Click: paint\nAlt+click: select\nAlt+Shift+click: add to selection\nAlt+Ctrl+click: intersect selections")
+                temp_btn.setToolTip(buttons_tooltip)
                 temp_btn.setMinimumSize(round(palette_size // grid_side / self.screen_factor), round(palette_size // grid_side / self.screen_factor))
                 temp_btn.setFlat(True)
                 temp_btn.setCheckable(True)
@@ -105,17 +120,26 @@ class QTexturePalette(QtWidgets.QGroupBox):
 
         self.palette_frame.setAutoFillBackground(True)
         self.palette_frame.setSizePolicy(QtWidgets.QSizePolicy().Expanding, QtWidgets.QSizePolicy().Expanding)
-        self.palette_frame.setStyleSheet(".QFrame{border-image: url( " + image_path + ") 0 0 0 0 stretch stretch;}")
+        self.palette_frame.setStyleSheet(".QFrame{border-image: url( " + image_filename + ") 0 0 0 0 stretch stretch;}")
         self.palette_group_layout.setAlignment(QtCore.Qt.AlignCenter)
         self.palette_group_layout.addWidget(self.palette_frame)
         self.setLayout(self.palette_group_layout)
-        # self.setBaseSize(palette_size, palette_size)
         self.setSizePolicy(QtWidgets.QSizePolicy().Expanding, QtWidgets.QSizePolicy().Expanding)
 
-    def change_image(self, image_path):
-        self.palette_frame.setStyleSheet(".QFrame{border-image: url( " + image_path + ") 0 0 0 0 stretch stretch;}")
+    def change_image(self, image_filename):
+        """
+        Update the background image of the palette
+        :param image_filename: full path and name of the new image
+        """
+        image_filename = image_filename.replace("\\", "/")  # Needed because path ends in a stylesheet
+        self.palette_frame.setStyleSheet(".QFrame{border-image: url( " + image_filename + ") 0 0 0 0 stretch stretch;}")
 
     def change_labels(self, button_labels_filename):
+        """
+        Update the buttons' labels
+        :param button_labels_filename:
+        """
+        # TODO
         pass
 
 
@@ -125,6 +149,12 @@ class QCheckableList(QtWidgets.QWidget):
         A QCheckableList object is composed by a group and a QTreeWidget used as list of items, each with a checkbox.
         """
     def __init__(self, title, items=(), show_buttons=True):
+        """
+        Class constructor
+        :param title: Name of the palette widget
+        :param items: tuple containing the texts to be listed
+        :param show_buttons: (bool) Show All/None selection buttons
+        """
         super(QCheckableList, self).__init__()
 
         self.items = items
@@ -156,6 +186,10 @@ class QCheckableList(QtWidgets.QWidget):
             tree.addTopLevelItem(item)
 
     def set_items_status(self, checked):
+        """
+        Set checked status for the items
+        :param checked: (bool) Is the item checked or not?
+        """
         for i in range(self.tree.topLevelItemCount()):
             item = self.tree.topLevelItem(i)
             if checked:
@@ -164,6 +198,10 @@ class QCheckableList(QtWidgets.QWidget):
                 item.setCheckState(0, QtCore.Qt.Unchecked)
 
     def get_selected_items(self):
+        """
+        Get checked items
+        :return: (tuple) lists of selected items and selected items texts
+        """
         root = self.tree.invisibleRootItem()
         selected_items = []
         selected_items_texts = []
@@ -177,6 +215,10 @@ class QCheckableList(QtWidgets.QWidget):
 
     @Slot(tuple)
     def update_items(self, new_items):
+        """
+        Change the list of shown items
+        :param new_items: (tuple) a new tuple os items to be shown
+        """
         root = self.tree.invisibleRootItem()
         for item in root.takeChildren():
             root.removeChild(item)
@@ -187,28 +229,3 @@ class QCheckableList(QtWidgets.QWidget):
             item.setText(0, i)
             item.setCheckState(0, QtCore.Qt.Unchecked)
             self.tree.addTopLevelItem(item)
-
-
-class QButtonLineEdit(QtWidgets.QLineEdit):
-    buttonClicked = Signal(bool)
-
-    def __init__(self, parent=None):
-        super(QButtonLineEdit, self).__init__(parent)
-
-        self.button = QtWidgets.QPushButton(self, "Prova")
-        self.button.setCursor(QtCore.Qt.ArrowCursor)
-        self.button.clicked.connect(self.buttonClicked.emit)
-
-        frameWidth = self.style().pixelMetric(QtCore.QStyle.PM_DefaultFrameWidth)
-        buttonSize = self.button.sizeHint()
-
-        self.setStyleSheet('QLineEdit {padding-right: %dpx; }' % (buttonSize.width() + frameWidth + 1))
-        self.setMinimumSize(max(self.minimumSizeHint().width(), buttonSize.width() + frameWidth*2 + 2),
-                            max(self.minimumSizeHint().height(), buttonSize.height() + frameWidth*2 + 2))
-
-    def resizeEvent(self, event):
-        buttonSize = self.button.sizeHint()
-        frameWidth = self.style().pixelMetric(QtCore.QStyle.PM_DefaultFrameWidth)
-        self.button.move(self.rect().right() - frameWidth - buttonSize.width(),
-                         (self.rect().bottom() - buttonSize.height() + 1)/2)
-        super(QButtonLineEdit, self).resizeEvent(event)

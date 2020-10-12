@@ -8,7 +8,7 @@ setuptools.setup(
     version="0.0.1",
     author="Daniele Bernardini",
     author_email="bdcreations@gmail.com",
-    description="A small example package",
+    description="A kit of pre-made PySide2 objects for your UIs",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://https://github.com/DanieleBerna/pyside2-kit",
