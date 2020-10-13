@@ -31,11 +31,13 @@ def run_demo():
 
     my_list = ps2kit.QCheckableList("Items", ("item1", "item2", "item3", "item4", "item5", "item6"))
     demo_layout.addWidget(my_list)
+    change_items_list_button = QtWidgets.QPushButton("Update Items (generate a random list of strings)")
+    change_items_list_button.clicked.connect(lambda: my_list.update_items(tuple([random_string(random.randrange(4, 16)) for i in range(random.randrange(1, 10))])))
+    demo_layout.addWidget(change_items_list_button)
 
-    test_button = QtWidgets.QPushButton("Update Items (generate a random list of strings)")
-    test_button.clicked.connect(lambda: my_list.update_items(tuple([random_string(random.randrange(4, 16)) for i in range(random.randrange(1, 10))])))
+    my_browse = ps2kit.QBrowseFolder()
+    demo_layout.addWidget(my_browse)
 
-    demo_layout.addWidget(test_button)
     demo_window.setLayout(demo_layout)
 
     demo_window.show()

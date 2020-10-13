@@ -6,6 +6,7 @@ Each object is built on standard PySide2 classes like QWidget.
 
 """
 
+import os
 from functools import partial
 
 from PySide2 import QtWidgets, QtCore
@@ -229,3 +230,38 @@ class QCheckableList(QtWidgets.QWidget):
             item.setText(0, i)
             item.setCheckState(0, QtCore.Qt.Unchecked)
             self.tree.addTopLevelItem(item)
+
+
+class QBrowseFolder(QtWidgets.QWidget):
+    """
+    A 'Browse folder' widget.
+    Composed by a line edit (showing path of the selected folder) and a button
+    """
+    def __init__(self, button_label="Browse", dialog_title="Select folder", starting_folder=os.getcwd()):
+        """
+        Class constructor
+        :param button_label: (str) Text label for the browse button
+        :param dialog_title:  (str) Title of the child browse folder dialog
+        :param starting_folder: (str) Path to the default folder of the dialog
+        """
+        super(QBrowseFolder, self).__init__()
+
+        self.browse_layout = QtWidgets.QHBoxLayout()
+        self.folder_edit = QtWidgets.QLineEdit(parent=self)
+        self.browse_button = QtWidgets.QPushButton(button_label, parent=self)
+        self.browse_layout.addWidget(self.folder_edit)
+        self.browse_layout.addWidget(self.browse_button)
+        self.setLayout(self.browse_layout)
+
+        self.browse_button.clicked.connect(lambda: self.open_browse_folder_dialog(dialog_title, starting_folder))
+
+    def open_browse_folder_dialog(self, dialog_title, starting_folder):
+        """
+        Open the child dialog
+        :param dialog_title: (str) Title of the dialog
+        :param starting_folder: (str) Path to the default folder
+        """
+        if not os.path.exists(starting_folder):
+            starting_folder = os.getcwd()  # if starting_folder doesn't exists default to current working directory
+        folder = QtWidgets.QFileDialog.getExistingDirectory(self, dialog_title, starting_folder)
+        self.folder_edit.setText(folder)

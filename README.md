@@ -26,3 +26,7 @@ the function emit a signal containing the informatin needed to identify the sour
 This widget shows a list text item with checkboxes and 2 button for select All/None.
 The list of texts to be shown is provided with a Tuple.
 It uses a QTreeWidget to show the checkable item.
+
+### QBrowseFolder
+
+This widget is composed by a line edit and a 'browse' button: used for selecting a folder and get its path
