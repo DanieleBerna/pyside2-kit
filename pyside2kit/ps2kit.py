@@ -236,7 +236,7 @@ class QBrowseFolder(QtWidgets.QWidget):
     A 'Browse folder' widget.
     Composed by a line edit (showing path of the selected folder) and a button
     """
-    def __init__(self, button_label="Browse", title="Select folder", root_folder=os.getcwd(), button_align=QtCore.Qt.AlignLeft):
+    def __init__(self, button_label="Browse", title="Select folder", root_folder=os.getcwd(), button_align=QtCore.Qt.AlignRight):
         """
         Class constructor
         :param button_label: (str) Text label for the browse button
