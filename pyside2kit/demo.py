@@ -36,6 +36,7 @@ def run_demo():
     demo_layout.addWidget(change_items_list_button)
 
     my_browse = ps2kit.QBrowseFolder()
+    my_browse.title = "My folder browser dialog"
     demo_layout.addWidget(my_browse)
 
     demo_window.setLayout(demo_layout)

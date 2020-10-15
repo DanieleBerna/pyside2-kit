@@ -12,7 +12,6 @@ from functools import partial
 from PySide2 import QtWidgets, QtCore
 from PySide2.QtCore import Signal, Slot
 
-
 class QTexturePalette(QtWidgets.QGroupBox):
     """
     Extends QGroupBox to create a clickable palette.
@@ -237,31 +236,46 @@ class QBrowseFolder(QtWidgets.QWidget):
     A 'Browse folder' widget.
     Composed by a line edit (showing path of the selected folder) and a button
     """
-    def __init__(self, button_label="Browse", dialog_title="Select folder", starting_folder=os.getcwd()):
+    def __init__(self, button_label="Browse", title="Select folder", root_folder=os.getcwd(), button_align=QtCore.Qt.AlignLeft):
         """
         Class constructor
         :param button_label: (str) Text label for the browse button
-        :param dialog_title:  (str) Title of the child browse folder dialog
-        :param starting_folder: (str) Path to the default folder of the dialog
+        :param title:  (str) Title of the child browse folder dialog
+        :param root_folder: (str) Path to the default folder of the dialog
         """
         super(QBrowseFolder, self).__init__()
 
-        self.browse_layout = QtWidgets.QHBoxLayout()
-        self.folder_edit = QtWidgets.QLineEdit(parent=self)
-        self.browse_button = QtWidgets.QPushButton(button_label, parent=self)
-        self.browse_layout.addWidget(self.folder_edit)
-        self.browse_layout.addWidget(self.browse_button)
-        self.setLayout(self.browse_layout)
+        self.button_label = button_label
+        self.title = title
+        self.root_folder = root_folder
 
-        self.browse_button.clicked.connect(lambda: self.open_browse_folder_dialog(dialog_title, starting_folder))
+        self._browse_layout = QtWidgets.QHBoxLayout()
+        self._folder_line_edit = QtWidgets.QLineEdit(parent=self)
+        self._browse_button = QtWidgets.QPushButton(self.button_label, parent=self)
+        if button_align == QtCore.Qt.AlignRight:
+            self._browse_layout.addWidget(self._folder_line_edit)
+            self._browse_layout.addWidget(self._browse_button)
 
-    def open_browse_folder_dialog(self, dialog_title, starting_folder):
+        elif button_align == QtCore.Qt.AlignLeft:
+            self._browse_layout.addWidget(self._browse_button)
+            self._browse_layout.addWidget(self._folder_line_edit)
+
+        self.setLayout(self._browse_layout)
+        self._browse_button.clicked.connect(self._open_browse_folder_dialog)
+
+    def _open_browse_folder_dialog(self):
         """
-        Open the child dialog
-        :param dialog_title: (str) Title of the dialog
-        :param starting_folder: (str) Path to the default folder
+        Open the child dialog using instance's button_label and tile
         """
-        if not os.path.exists(starting_folder):
-            starting_folder = os.getcwd()  # if starting_folder doesn't exists default to current working directory
-        folder = QtWidgets.QFileDialog.getExistingDirectory(self, dialog_title, starting_folder)
-        self.folder_edit.setText(folder)
+        if not os.path.exists(self.root_folder):
+            root_folder = os.getcwd()  # if starting_folder doesn't exists default to current working directory
+        else:
+            root_folder = self.root_folder
+        browsed_folder = QtWidgets.QFileDialog.getExistingDirectory(self, self.title, root_folder)
+        self._folder_line_edit.setText(browsed_folder)
+
+    def get_folder(self):
+        """
+        Return the browsed folder, stored inside the _folder_line_edit widget
+        """
+        return self._folder_line_edit.text()
