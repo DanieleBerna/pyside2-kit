@@ -37,17 +37,18 @@ class QTexturePalette(QtWidgets.QGroupBox):
                                  (QtWidgets.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier),
                                  (QtWidgets.QApplication.keyboardModifiers() == QtCore.Qt.ControlModifier))
 
-    def __init__(self, palette_name="", grid_side=4, image_filename="", button_labels_filename=None, palette_size=800, buttons_tooltip="Tooltip"):
+    def __init__(self, palette_name="", grid_side=4, palette_size=800, image_filename="", button_labels_filename=None, buttons_tooltip="Tooltip"):
         """
         Setup the palette object generating the QPushButton grid
         :param palette_name: name of the palette: it will shown as group name too
         :param grid_side: number of cells/button per side (assuming a squared grid_side x grid_side palette)
+        :param palette_size: size in pixel of the widget
         :param image_filename: full filename with path of the image to be used as palette background
         :param button_labels_filename: full filename with path of the optional text file containing buttons' labels
-        :param palette_size: size in pixel of the widget
         :param buttons_tooltip: tooltip text for the buttons (note: same for all)
         """
         image_filename = image_filename.replace("\\", "/")  # Needed because path ends in a stylesheet
+        image_filename = image_filename.replace("$", r"\$")  # This is needed to escape characters not allowed in stylesheet URLs (needs a better way!)
         if button_labels_filename is not None:
             button_labels_filename = button_labels_filename.replace("\\", "/")  # Needed because path ends in a stylesheet
 

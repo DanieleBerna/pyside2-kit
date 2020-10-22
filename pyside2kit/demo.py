@@ -17,8 +17,8 @@ def run_demo():
     demo_window = QtWidgets.QWidget()
     demo_layout = QtWidgets.QVBoxLayout()
     my_palette = ps2kit.QTexturePalette(palette_name="Test Palette", grid_side=8,
-                                         image_filename=os.path.join(os.path.dirname(__file__), "resources", "palette_01.png"),
                                          palette_size=800,
+                                         image_filename=os.path.join(os.path.dirname(__file__), "resources", "palette_01.png"),
                                          button_labels_filename=os.path.join(os.path.dirname(__file__), "resources", "labels_01.txt"))
     demo_layout.addWidget(my_palette)
     change_palette_btn = QtWidgets.QPushButton("Change palette image")
