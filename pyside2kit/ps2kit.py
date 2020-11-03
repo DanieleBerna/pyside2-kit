@@ -12,6 +12,15 @@ from functools import partial
 from PySide2 import QtWidgets, QtCore
 from PySide2.QtCore import Signal, Slot
 
+ESCAPED_CHARS_DICT = {"-":  r"\-",
+                      "]":  r"\]",
+                      "\\": r"\\",
+                      "^":  r"\^",
+                      "$":  r"\$",
+                      "*":  r"\*",
+                      ".":  r"\."}
+
+
 class QTexturePalette(QtWidgets.QGroupBox):
     """
     Extends QGroupBox to create a clickable palette.
@@ -49,12 +58,13 @@ class QTexturePalette(QtWidgets.QGroupBox):
         :param show_image_selector: if True add a QBrowseFile widget below the palette and a Change image button
         """
 
-
         super(QTexturePalette, self).__init__(palette_name)
 
-        image_filename = image_filename.replace("\\", "/")  # Needed because path ends in a stylesheet
-        self.image_filename = image_filename.replace("$",
-                                                     r"\$")  # This is needed to escape characters not allowed in stylesheet URLs (needs a better way!)
+        #image_filename = image_filename.replace("\\", "/")  # Needed because path ends in a stylesheet
+        #self.image_filename = image_filename.replace("$", r"\$")  # This is needed to escape characters not allowed in stylesheet URLs (needs a better way!)
+
+        self.image_filename = image_filename.translate(str.maketrans(ESCAPED_CHARS_DICT))  # SHOULD TRY THIS
+
         if button_labels_filename is not None:
             button_labels_filename = button_labels_filename.replace("\\",
                                                                     "/")  # Needed because path ends in a stylesheet
