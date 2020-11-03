@@ -21,10 +21,7 @@ def run_demo():
                                          image_filename=os.path.join(os.path.dirname(__file__), "resources", "palette_01.png"),
                                          button_labels_filename=os.path.join(os.path.dirname(__file__), "resources", "labels_01.txt"))
     demo_layout.addWidget(my_palette)
-    change_palette_btn = QtWidgets.QPushButton("Change palette image")
-    demo_layout.addWidget(change_palette_btn)
 
-    change_palette_btn.clicked.connect(lambda: my_palette.change_image(os.path.join(os.path.dirname(__file__), "resources", "palette_02.png")))
     change_labels_btn = QtWidgets.QPushButton("Change palette labels")
     demo_layout.addWidget(change_labels_btn)
     change_labels_btn.setEnabled(False)
@@ -38,6 +35,10 @@ def run_demo():
     my_browse = ps2kit.QBrowseFolder()
     my_browse.title = "My folder browser dialog"
     demo_layout.addWidget(my_browse)
+
+    my_file_browse = ps2kit.QBrowseFile()
+    my_file_browse.title = "My file browser dialog"
+    demo_layout.addWidget(my_file_browse)
 
     demo_window.setLayout(demo_layout)
 

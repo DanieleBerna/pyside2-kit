@@ -37,7 +37,7 @@ class QTexturePalette(QtWidgets.QGroupBox):
                                  (QtWidgets.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier),
                                  (QtWidgets.QApplication.keyboardModifiers() == QtCore.Qt.ControlModifier))
 
-    def __init__(self, palette_name="", grid_side=4, palette_size=800, image_filename="", button_labels_filename=None, buttons_tooltip="Tooltip"):
+    def __init__(self, palette_name="", grid_side=4, palette_size=800, image_filename="", button_labels_filename=None, buttons_tooltip="Tooltip", show_image_selector=True):
         """
         Setup the palette object generating the QPushButton grid
         :param palette_name: name of the palette: it will shown as group name too
@@ -46,16 +46,21 @@ class QTexturePalette(QtWidgets.QGroupBox):
         :param image_filename: full filename with path of the image to be used as palette background
         :param button_labels_filename: full filename with path of the optional text file containing buttons' labels
         :param buttons_tooltip: tooltip text for the buttons (note: same for all)
+        :param show_image_selector: if True add a QBrowseFile widget below the palette and a Change image button
         """
-        image_filename = image_filename.replace("\\", "/")  # Needed because path ends in a stylesheet
-        image_filename = image_filename.replace("$", r"\$")  # This is needed to escape characters not allowed in stylesheet URLs (needs a better way!)
-        if button_labels_filename is not None:
-            button_labels_filename = button_labels_filename.replace("\\", "/")  # Needed because path ends in a stylesheet
+
 
         super(QTexturePalette, self).__init__(palette_name)
 
+        image_filename = image_filename.replace("\\", "/")  # Needed because path ends in a stylesheet
+        self.image_filename = image_filename.replace("$",
+                                                     r"\$")  # This is needed to escape characters not allowed in stylesheet URLs (needs a better way!)
+        if button_labels_filename is not None:
+            button_labels_filename = button_labels_filename.replace("\\",
+                                                                    "/")  # Needed because path ends in a stylesheet
+
         self.palette_name = palette_name
-        self.palette_group_layout = QtWidgets.QHBoxLayout()
+        self.palette_group_layout = QtWidgets.QVBoxLayout()
         self.palette_frame = QtWidgets.QFrame()
         self.palette_frame_layout = QtWidgets.QGridLayout()
         self.palette_frame_layout.setSpacing(0)
@@ -121,19 +126,27 @@ class QTexturePalette(QtWidgets.QGroupBox):
 
         self.palette_frame.setAutoFillBackground(True)
         self.palette_frame.setSizePolicy(QtWidgets.QSizePolicy().Expanding, QtWidgets.QSizePolicy().Expanding)
-        self.palette_frame.setStyleSheet(".QFrame{border-image: url( " + image_filename + ") 0 0 0 0 stretch stretch;}")
+        self.palette_frame.setStyleSheet(".QFrame{border-image: url( " + self.image_filename + ") 0 0 0 0 stretch stretch;}")
         self.palette_group_layout.setAlignment(QtCore.Qt.AlignCenter)
         self.palette_group_layout.addWidget(self.palette_frame)
         self.setLayout(self.palette_group_layout)
         self.setSizePolicy(QtWidgets.QSizePolicy().Expanding, QtWidgets.QSizePolicy().Expanding)
+
+        if show_image_selector:
+            self.image_browser_dialog = QBrowseFile(button_label="Change", title="Select new texture", file_types="Images (*.png)", root_file=self.image_filename)
+            self.palette_group_layout.addWidget(self.image_browser_dialog)
+            self.image_browser_dialog._filepath_line_edit.setEnabled(False)
+            self.image_browser_dialog.file_selected.connect(self.change_image)
 
     def change_image(self, image_filename):
         """
         Update the background image of the palette
         :param image_filename: full path and name of the new image
         """
-        image_filename = image_filename.replace("\\", "/")  # Needed because path ends in a stylesheet
-        self.palette_frame.setStyleSheet(".QFrame{border-image: url( " + image_filename + ") 0 0 0 0 stretch stretch;}")
+        if image_filename:
+            image_filename = image_filename.replace("\\", "/")  # Needed because path ends in a stylesheet
+            self.image_filename = image_filename.replace("$", r"\$")  # This is needed to escape characters not allowed in stylesheet URLs (needs a better way!)
+            self.palette_frame.setStyleSheet(".QFrame{border-image: url( " + self.image_filename + ") 0 0 0 0 stretch stretch;}")
 
     def change_labels(self, button_labels_filename):
         """
@@ -280,3 +293,63 @@ class QBrowseFolder(QtWidgets.QWidget):
         Return the browsed folder, stored inside the _folder_line_edit widget
         """
         return self._folder_line_edit.text()
+
+
+class QBrowseFile(QtWidgets.QWidget):
+    """
+    A 'Browse file' widget.
+    Composed by a line edit (showing path of the selected file) and a button
+    """
+
+    file_selected = Signal(str)  # Signal emitted when a file is selected using the dialog
+
+    def __init__(self, button_label="Select", title="Select file", root_folder=os.getcwd(), file_types="All (*.*)", root_file=None,
+                 button_align=QtCore.Qt.AlignRight):
+        """
+        Class constructor
+        :param button_label: (str) Text label for the browse button
+        :param title:  (str) Title of the child browse file dialog
+        :param root_folder: (str) Path to the default folder of the dialog
+        """
+        super(QBrowseFile, self).__init__()
+
+        self.button_label = button_label
+        self.title = title
+        self.root_folder = root_folder
+        self.file_types = file_types
+
+        self._browse_layout = QtWidgets.QHBoxLayout()
+        self._filepath_line_edit = QtWidgets.QLineEdit(parent=self)
+        if root_file is not None:
+            self._filepath_line_edit.setText(root_file)
+        self._browse_button = QtWidgets.QPushButton(self.button_label, parent=self)
+        if button_align == QtCore.Qt.AlignRight:
+            self._browse_layout.addWidget(self._filepath_line_edit)
+            self._browse_layout.addWidget(self._browse_button)
+
+        elif button_align == QtCore.Qt.AlignLeft:
+            self._browse_layout.addWidget(self._browse_button)
+            self._browse_layout.addWidget(self._folder_line_edit)
+
+        self.setLayout(self._browse_layout)
+        self._browse_button.clicked.connect(self._open_browse_file_dialog)
+
+    def _open_browse_file_dialog(self):
+        """
+        Open the child dialog using instance's button_label and tile
+        """
+        if not os.path.exists(self.root_folder):
+            root_folder = os.getcwd()  # if starting_folder doesn't exists default to current working directory
+        else:
+            root_folder = self.root_folder
+
+        browsed_file = QtWidgets.QFileDialog.getOpenFileName(self, self.title, root_folder, self.file_types)
+        if browsed_file[0]:
+            self._filepath_line_edit.setText(browsed_file[0])
+            self.file_selected.emit(browsed_file[0])
+
+    def get_folder(self):
+        """
+        Return the selected file path, stored inside the _filepath_line_edit widget
+        """
+        return self._filepath_line_edit.text()
