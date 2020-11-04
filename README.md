@@ -31,6 +31,6 @@ It uses a QTreeWidget to show the checkable item.
 
 This widget is composed by a line edit and a 'browse' button: used for selecting a folder and get its path
 
-### QBrowseFolder
+### QBrowseFile
 
 This widget is composed by a line edit and a 'select' button: used for selecting a file and get its path
