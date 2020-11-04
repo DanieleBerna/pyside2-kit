@@ -32,11 +32,11 @@ def run_demo():
     change_items_list_button.clicked.connect(lambda: my_list.update_items(tuple([random_string(random.randrange(4, 16)) for i in range(random.randrange(1, 10))])))
     demo_layout.addWidget(change_items_list_button)
 
-    my_browse = ps2kit.QBrowseFolder()
+    my_browse = ps2kit.QBrowseFolder(root_folder="C:\\")
     my_browse.title = "My folder browser dialog"
     demo_layout.addWidget(my_browse)
 
-    my_file_browse = ps2kit.QBrowseFile()
+    my_file_browse = ps2kit.QBrowseFile(root_folder="C:\\")
     my_file_browse.title = "My file browser dialog"
     demo_layout.addWidget(my_file_browse)
 
