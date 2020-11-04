@@ -296,7 +296,8 @@ class QBrowseFolder(QtWidgets.QWidget):
         else:
             root_folder = self.root_folder
         browsed_folder = QtWidgets.QFileDialog.getExistingDirectory(self, self.title, root_folder)
-        self._folder_line_edit.setText(browsed_folder)
+        if browsed_folder:
+            self._folder_line_edit.setText(browsed_folder)
 
     def get_folder(self):
         """
