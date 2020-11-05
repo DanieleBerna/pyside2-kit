@@ -36,7 +36,7 @@ def run_demo():
     my_browse.title = "My folder browser dialog"
     demo_layout.addWidget(my_browse)
 
-    my_file_browse = ps2kit.QBrowseFile(root_folder="C:\\")
+    my_file_browse = ps2kit.QBrowseFile(root_folder="C:\\", hide_path_line_edit=True, tooltip="Edit line is hidden for this widget")
     my_file_browse.title = "My file browser dialog"
     demo_layout.addWidget(my_file_browse)
 

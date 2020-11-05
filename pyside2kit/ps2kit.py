@@ -268,17 +268,21 @@ class QBrowseDialog(QtWidgets.QWidget):
     path_browsed = Signal(str)  # Signal emitted when a path is selected using the dialog
 
     def __init__(self, button_label="Browse", title="Select", root_folder=os.getcwd(),
-                 button_align=QtCore.Qt.AlignRight):
+                 button_align=QtCore.Qt.AlignRight, hide_path_line_edit=False, tooltip=""):
         """
         Class constructor
         :param button_label: (str) Text label for the browse button
         :param title:  (str) Title of the child browser dialog
         :param root_folder: (str) Path to the default folder of the browser dialog
+        :param button_align: (AlignmentFlag) Specify on which side the button has to be shown
+        :param button_align: (bool) hide the line edit showing the browsed path
+        :param tooltip: (str) tooltipp for the whole widget
         """
         super(QBrowseDialog, self).__init__()
 
         self.button_label = button_label
         self.title = title
+        self.setToolTip(tooltip)
         if not os.path.exists(root_folder):
             self.root_folder = os.getcwd()  # if starting_folder doesn't exists default to current working directory
         else:
@@ -295,6 +299,7 @@ class QBrowseDialog(QtWidgets.QWidget):
             self._browse_layout.addWidget(self._browse_button)
             self._browse_layout.addWidget(self._path_line_edit)
 
+        self._path_line_edit.setVisible(not hide_path_line_edit)
         self.setLayout(self._browse_layout)
         self._browse_button.clicked.connect(self.open_browse_dialog)
 
@@ -327,28 +332,36 @@ class QBrowseDialog(QtWidgets.QWidget):
 
 
 class QBrowseFolder(QBrowseDialog):
-    def __init__(self, button_label="Browse", title="Select folder", root_folder=os.getcwd(), button_align=QtCore.Qt.AlignRight):
+    def __init__(self, button_label="Browse", title="Select folder", root_folder=os.getcwd(),
+                 button_align=QtCore.Qt.AlignRight, hide_path_line_edit=False, tooltip=""):
         """
         Class constructor
         :param button_label: (str) Text label for the browse button
-        :param title:  (str) Title of the child browse folder dialog
-        :param root_folder: (str) Path to the default folder of the dialog
+        :param title:  (str) Title of the child browser dialog
+        :param root_folder: (str) Path to the default folder of the browser dialog
+        :param button_align: (AlignmentFlag) Specify on which side the button has to be shown
+        :param button_align: (bool) hide the line edit showing the browsed path
+        :param tooltip: (str) tooltipp for the whole widget
         """
-        super(QBrowseFolder, self).__init__(button_label, title, root_folder, button_align)
+        super(QBrowseFolder, self).__init__(button_label, title, root_folder, button_align, hide_path_line_edit, tooltip)
 
     def _open_qfiledialog(self):
         return QtWidgets.QFileDialog.getExistingDirectory(self, self.title, self.root_folder)
 
 
 class QBrowseFile(QBrowseDialog):
-    def __init__(self, button_label="Select", title="Select file", root_folder=os.getcwd(), button_align=QtCore.Qt.AlignRight, file_types="All (*.*)"):
+    def __init__(self, button_label="Select", title="Select file", root_folder=os.getcwd(),
+                 button_align=QtCore.Qt.AlignRight, hide_path_line_edit=False, tooltip="", file_types="All (*.*)"):
         """
         Class constructor
         :param button_label: (str) Text label for the browse button
-        :param title:  (str) Title of the child browse folder dialog
-        :param root_folder: (str) Path to the default folder of the dialog
+        :param title:  (str) Title of the child browser dialog
+        :param root_folder: (str) Path to the default folder of the browser dialog
+        :param button_align: (AlignmentFlag) Specify on which side the button has to be shown
+        :param button_align: (bool) hide the line edit showing the browsed path
+        :param tooltip: (str) tooltipp for the whole widget
         """
-        super(QBrowseFile, self).__init__(button_label, title, root_folder, button_align)
+        super(QBrowseFile, self).__init__(button_label, title, root_folder, button_align, hide_path_line_edit, tooltip)
         self.file_types = file_types
 
     def _open_qfiledialog(self):
