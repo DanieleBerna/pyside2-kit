@@ -11,7 +11,6 @@ All objects are classes that extend some other standard PySide2 class (I think t
 
 ## Demo script
 Run demo.py to open a showcase window.
-**NOTE** At the moment the *Change palette image* works only the first time (still have to cycle between template images) and *Change palette labels* is deactivated because the function is not implemented yet.
 
 ## Module content
 ### QTexturePalette
@@ -20,6 +19,7 @@ This widget shows a squared image and overlays on top of it a grid of squadred, 
 I used this widget to select cells from a texture palette and assign texture/color data to a 3D object in Blender.
 Every `QPushButton` of the grid is connected to the same **@Slot** function `press_button()`:
 the function emit a signal containing the informatin needed to identify the source button and take appropriate actions in the main UI/application.
+It's possible to change the image file using the QBrowseFile widget included.
 
 ### QCheckableList
 
@@ -30,3 +30,7 @@ It uses a QTreeWidget to show the checkable item.
 ### QBrowseFolder
 
 This widget is composed by a line edit and a 'browse' button: used for selecting a folder and get its path
+
+### QBrowseFile
+
+This widget is composed by a line edit and a 'select' button: used for selecting a file and get its path
