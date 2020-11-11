@@ -34,3 +34,7 @@ This widget is composed by a line edit and a 'browse' button: used for selecting
 ### QBrowseFile
 
 This widget is composed by a line edit and a 'select' button: used for selecting a file and get its path
+
+### QSaveFile
+
+This widget is composed by a line edit and a 'save' button: used for selecting a name and folder for a file you want to save
