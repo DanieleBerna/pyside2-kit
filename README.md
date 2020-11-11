@@ -3,7 +3,7 @@
 
 ## Introduction
 While writing my small tools I found myself building some parts of the UIs that could be used in other projects.
-So instead of _reinventig the wheel_ I thought to create a ps2kit.py module containing all of them.
+So instead of _reinventing the wheel_ I thought to create a ps2kit.py module containing all of them.
 
 It's an ongoing process: I plan to add objects to the module as soon as they pops out in another project.
 
@@ -13,6 +13,7 @@ All objects are classes that extend some other standard PySide2 class (I think t
 Run demo.py to open a showcase window.
 
 ## Module content
+
 ### QTexturePalette
 
 This widget shows a squared image and overlays on top of it a grid of squadred, transparent `QPushButtons`, each one with an optional label.
@@ -27,19 +28,23 @@ This widget shows a list text item with checkboxes and 2 button for select All/N
 The list of texts to be shown is provided with a Tuple.
 It uses a QTreeWidget to show the checkable item.
 
-### QBrowseFolder
+### QBrowseDialog
+This abstract class implements a simple widget composed by a QPush button and an optional edit line (shown by default).
+Its aim is to quickly add widgets useful for opening QFileDialogs in different configuration (browse for a folder, open or save a file).
+The QPushButton is responsible for opening the dialog while the QLineEdit shows the path returned by the dialog (if valid).
+If a valid path is returned after closing the dialog, a **path_browsed signal** is emitted together with the path.
+Subclasses need to implement the private method **\_open_qfiledialog()** where specific QFileDialogs are used, together with specific logic.
 
-A widget that opens a QFileDialog.getExistingDirectory: used to get the path of an existing folder.
-It's composed by a line edit (optional) that shows the folder path and a 'browse' button used to open the dialog.
+#### QBrowseFolder(QBrowseDialog)
+
+A widget (child of QBrowseDialog) used to get the path of an existing folder.
 
 
-### QBrowseFile
+#### QBrowseFile(QBrowseDialog)
 
-A widget that opens a QFileDialog.getOpenFileName: used to get the path of a file to be opened.
-It's composed by a line edit (optional) that shows the file path and a 'select' button used to open the dialog.
+A widget (child of QBrowseDialog) used to get the path of a file to be opened.
 
 
-### QSaveFile
+#### QSaveFile(QBrowseDialog)
 
-A widget that opens a QFileDialog.getSaveFileName: used to get the path of a file to be saved.
-It's composed by a line edit (optional) that shows the file path and a 'save' button used to open the dialog.
+A widget (child of QBrowseDialog) used to get the path of a file to be saved.
