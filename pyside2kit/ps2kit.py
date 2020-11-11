@@ -341,7 +341,7 @@ class QBrowseFolder(QBrowseDialog):
         :param root_folder: (str) Path to the default folder of the browser dialog
         :param button_align: (AlignmentFlag) Specify on which side the button has to be shown
         :param button_align: (bool) hide the line edit showing the browsed path
-        :param tooltip: (str) tooltipp for the whole widget
+        :param tooltip: (str) tooltip for the whole widget
         """
         super(QBrowseFolder, self).__init__(button_label, title, root_folder, button_align, hide_path_line_edit, tooltip)
 
@@ -359,7 +359,7 @@ class QBrowseFile(QBrowseDialog):
         :param root_folder: (str) Path to the default folder of the browser dialog
         :param button_align: (AlignmentFlag) Specify on which side the button has to be shown
         :param button_align: (bool) hide the line edit showing the browsed path
-        :param tooltip: (str) tooltipp for the whole widget
+        :param tooltip: (str) tooltip for the whole widget
         """
         super(QBrowseFile, self).__init__(button_label, title, root_folder, button_align, hide_path_line_edit, tooltip)
         self.file_types = file_types
@@ -369,7 +369,7 @@ class QBrowseFile(QBrowseDialog):
 
 
 class QSaveFile(QBrowseDialog):
-    def __init__(self, button_label="Browse", title="Save file", root_folder=os.getcwd(),
+    def __init__(self, button_label="Save", title="Save file", root_folder=os.getcwd(),
                  button_align=QtCore.Qt.AlignRight, hide_path_line_edit=False, tooltip="", file_types="All (*.*)"):
         """
         Class constructor
@@ -378,7 +378,7 @@ class QSaveFile(QBrowseDialog):
         :param root_folder: (str) Path to the default folder of the browser dialog
         :param button_align: (AlignmentFlag) Specify on which side the button has to be shown
         :param button_align: (bool) hide the line edit showing the browsed path
-        :param tooltip: (str) tooltipp for the whole widget
+        :param tooltip: (str) tooltip for the whole widget
         """
         super(QSaveFile, self).__init__(button_label, title, root_folder, button_align, hide_path_line_edit, tooltip)
         self.file_types = file_types

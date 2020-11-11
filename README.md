@@ -29,12 +29,17 @@ It uses a QTreeWidget to show the checkable item.
 
 ### QBrowseFolder
 
-This widget is composed by a line edit and a 'browse' button: used for selecting a folder and get its path
+A widget that opens a QFileDialog.getExistingDirectory: used to get the path of an existing folder.
+It's composed by a line edit (optional) that shows the folder path and a 'browse' button used to open the dialog.
+
 
 ### QBrowseFile
 
-This widget is composed by a line edit and a 'select' button: used for selecting a file and get its path
+A widget that opens a QFileDialog.getOpenFileName: used to get the path of a file to be opened.
+It's composed by a line edit (optional) that shows the file path and a 'select' button used to open the dialog.
+
 
 ### QSaveFile
 
-This widget is composed by a line edit and a 'save' button: used for selecting a name and folder for a file you want to save
+A widget that opens a QFileDialog.getSaveFileName: used to get the path of a file to be saved.
+It's composed by a line edit (optional) that shows the file path and a 'save' button used to open the dialog.

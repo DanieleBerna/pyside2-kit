@@ -40,6 +40,10 @@ def run_demo():
     my_file_browse.title = "My file browser dialog"
     demo_layout.addWidget(my_file_browse)
 
+    my_file_save = ps2kit.QSaveFile(root_folder="C:\\", tooltip="Save file dialog", file_types="Text Files (*.txt);;All Files (*)")
+    my_file_save.title = "My save file dialog"
+    demo_layout.addWidget(my_file_save)
+
     demo_window.setLayout(demo_layout)
 
     demo_window.show()
