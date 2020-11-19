@@ -325,6 +325,14 @@ class QBrowseDialog(QtWidgets.QWidget):
             self._path_line_edit.setText(browsed_path)
         self.path_browsed.emit(browsed_path)
 
+    def set_browsed_path(self, new_path):
+        """
+        Force the root_folder to be set to a specific path and update line edit text
+        :param new_path: (str) the new folder
+        """
+        self._path_line_edit.setText(new_path)
+        self.root_folder = new_path
+
     def get_browsed_path(self):
         """
         Return the browsed folder, stored inside the _folder_line_edit widget
