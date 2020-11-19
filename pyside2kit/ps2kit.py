@@ -290,6 +290,7 @@ class QBrowseDialog(QtWidgets.QWidget):
 
         self._browse_layout = QtWidgets.QHBoxLayout()
         self._path_line_edit = QtWidgets.QLineEdit(parent=self)
+        self._path_line_edit.setText(self.root_folder)
         self._browse_button = QtWidgets.QPushButton(self.button_label, parent=self)
         if button_align == QtCore.Qt.AlignRight:
             self._browse_layout.addWidget(self._path_line_edit)
