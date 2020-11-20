@@ -14,7 +14,7 @@ from PySide2.QtCore import Signal, Slot
 
 ESCAPED_CHARS_DICT = {"-":  r"\-",
                       "]":  r"\]",
-                      "\\": r"\\",
+                      "\\": "/",
                       "^":  r"\^",
                       "$":  r"\$",
                       "*":  r"\*",
@@ -136,6 +136,7 @@ class QTexturePalette(QtWidgets.QGroupBox):
 
         self.palette_frame.setAutoFillBackground(True)
         self.palette_frame.setSizePolicy(QtWidgets.QSizePolicy().Expanding, QtWidgets.QSizePolicy().Expanding)
+        print(".QFrame{border-image: url( " + self.image_filename + ") 0 0 0 0 stretch stretch;}")
         self.palette_frame.setStyleSheet(".QFrame{border-image: url( " + self.image_filename + ") 0 0 0 0 stretch stretch;}")
         self.palette_group_layout.setAlignment(QtCore.Qt.AlignCenter)
         self.palette_group_layout.addWidget(self.palette_frame)
