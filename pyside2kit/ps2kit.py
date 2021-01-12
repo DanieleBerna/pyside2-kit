@@ -14,7 +14,7 @@ from PySide2.QtCore import Signal, Slot
 
 ESCAPED_CHARS_DICT = {"-":  r"\-",
                       "]":  r"\]",
-                      "\\": r"\\",
+                      "\\": "/",
                       "^":  r"\^",
                       "$":  r"\$",
                       "*":  r"\*",
@@ -136,6 +136,7 @@ class QTexturePalette(QtWidgets.QGroupBox):
 
         self.palette_frame.setAutoFillBackground(True)
         self.palette_frame.setSizePolicy(QtWidgets.QSizePolicy().Expanding, QtWidgets.QSizePolicy().Expanding)
+        print(".QFrame{border-image: url( " + self.image_filename + ") 0 0 0 0 stretch stretch;}")
         self.palette_frame.setStyleSheet(".QFrame{border-image: url( " + self.image_filename + ") 0 0 0 0 stretch stretch;}")
         self.palette_group_layout.setAlignment(QtCore.Qt.AlignCenter)
         self.palette_group_layout.addWidget(self.palette_frame)
@@ -290,6 +291,7 @@ class QBrowseDialog(QtWidgets.QWidget):
 
         self._browse_layout = QtWidgets.QHBoxLayout()
         self._path_line_edit = QtWidgets.QLineEdit(parent=self)
+        self._path_line_edit.setText(self.root_folder)
         self._browse_button = QtWidgets.QPushButton(self.button_label, parent=self)
         if button_align == QtCore.Qt.AlignRight:
             self._browse_layout.addWidget(self._path_line_edit)
@@ -324,6 +326,14 @@ class QBrowseDialog(QtWidgets.QWidget):
             self._path_line_edit.setText(browsed_path)
         self.path_browsed.emit(browsed_path)
 
+    def set_browsed_path(self, new_path):
+        """
+        Force the root_folder to be set to a specific path and update line edit text
+        :param new_path: (str) the new folder
+        """
+        self._path_line_edit.setText(new_path)
+        self.root_folder = new_path
+
     def get_browsed_path(self):
         """
         Return the browsed folder, stored inside the _folder_line_edit widget
@@ -341,7 +351,7 @@ class QBrowseFolder(QBrowseDialog):
         :param root_folder: (str) Path to the default folder of the browser dialog
         :param button_align: (AlignmentFlag) Specify on which side the button has to be shown
         :param button_align: (bool) hide the line edit showing the browsed path
-        :param tooltip: (str) tooltipp for the whole widget
+        :param tooltip: (str) tooltip for the whole widget
         """
         super(QBrowseFolder, self).__init__(button_label, title, root_folder, button_align, hide_path_line_edit, tooltip)
 
@@ -359,7 +369,7 @@ class QBrowseFile(QBrowseDialog):
         :param root_folder: (str) Path to the default folder of the browser dialog
         :param button_align: (AlignmentFlag) Specify on which side the button has to be shown
         :param button_align: (bool) hide the line edit showing the browsed path
-        :param tooltip: (str) tooltipp for the whole widget
+        :param tooltip: (str) tooltip for the whole widget
         """
         super(QBrowseFile, self).__init__(button_label, title, root_folder, button_align, hide_path_line_edit, tooltip)
         self.file_types = file_types
@@ -369,7 +379,7 @@ class QBrowseFile(QBrowseDialog):
 
 
 class QSaveFile(QBrowseDialog):
-    def __init__(self, button_label="Browse", title="Save file", root_folder=os.getcwd(),
+    def __init__(self, button_label="Save", title="Save file", root_folder=os.getcwd(),
                  button_align=QtCore.Qt.AlignRight, hide_path_line_edit=False, tooltip="", file_types="All (*.*)"):
         """
         Class constructor
@@ -378,7 +388,7 @@ class QSaveFile(QBrowseDialog):
         :param root_folder: (str) Path to the default folder of the browser dialog
         :param button_align: (AlignmentFlag) Specify on which side the button has to be shown
         :param button_align: (bool) hide the line edit showing the browsed path
-        :param tooltip: (str) tooltipp for the whole widget
+        :param tooltip: (str) tooltip for the whole widget
         """
         super(QSaveFile, self).__init__(button_label, title, root_folder, button_align, hide_path_line_edit, tooltip)
         self.file_types = file_types
