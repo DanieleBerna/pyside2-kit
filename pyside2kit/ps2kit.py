@@ -93,6 +93,9 @@ class QTexturePalette(QtWidgets.QGroupBox):
 
         # Initialize button labels list reading labels from a given txt file
         self.button_labels_list = []
+        self.button_labels_widgets_list = []
+        self.update_labels(button_labels_filename)
+
         if button_labels_filename is not None:
             try:
                 self.button_labels_list = [line.rstrip('\n') for line in open(button_labels_filename)]
@@ -116,6 +119,7 @@ class QTexturePalette(QtWidgets.QGroupBox):
                 temp_layout.setContentsMargins(1, 1, 1, 1)
                 temp_layout.addWidget(temp_label)
                 temp_label.setWordWrap(True)
+                self.button_labels_widgets_list.append(temp_label)
                 temp_btn = QtWidgets.QPushButton("")
 
                 temp_btn.setToolTip(buttons_tooltip)
@@ -148,10 +152,10 @@ class QTexturePalette(QtWidgets.QGroupBox):
             self.palette_group_layout.addWidget(self.image_browser_dialog)
             self.image_browser_dialog._path_line_edit.setText(image_filename)
             self.image_browser_dialog._path_line_edit.setEnabled(False)
-            self.image_browser_dialog.path_browsed.connect(self.change_image)
+            self.image_browser_dialog.path_browsed.connect(self.update_image)
 
     @Slot(str)
-    def change_image(self, image_filename):
+    def update_image(self, image_filename):
         """
         Update the background image of the palette
         :param image_filename: full path and name of the new image
@@ -161,7 +165,18 @@ class QTexturePalette(QtWidgets.QGroupBox):
             self.image_filename = image_filename.replace("$", r"\$")  # This is needed to escape characters not allowed in stylesheet URLs (needs a better way!)
             self.palette_frame.setStyleSheet(".QFrame{border-image: url( " + self.image_filename + ") 0 0 0 0 stretch stretch;}")
 
-    def change_labels(self, button_labels_filename):
+    def update_labels(self, button_labels_filename):
+        """
+        Update the buttons' labels
+        :param button_labels_filename:
+        """
+        if button_labels_filename is not None:
+            try:
+                self.button_labels_list = [line.rstrip('\n') for line in open(button_labels_filename)]
+            except IOError:
+                pass
+
+    def update_buttons(self, button_labels_filename):
         """
         Update the buttons' labels
         :param button_labels_filename:
