@@ -284,7 +284,8 @@ class QBrowseDialog(QtWidgets.QWidget):
     path_browsed = Signal(str)  # Signal emitted when a path is selected using the dialog
 
     def __init__(self, button_label="Browse", title="Select", root_folder=os.getcwd(),
-                 button_align=QtCore.Qt.AlignRight, hide_path_line_edit=False, tooltip=""):
+                 button_align=QtCore.Qt.AlignRight, hide_path_line_edit=False, tooltip="",
+                 objectName='', *args, **kwargs):
         """
         Class constructor
         :param button_label: (str) Text label for the browse button
@@ -294,7 +295,7 @@ class QBrowseDialog(QtWidgets.QWidget):
         :param button_align: (bool) hide the line edit showing the browsed path
         :param tooltip: (str) tooltipp for the whole widget
         """
-        super(QBrowseDialog, self).__init__()
+        super(QBrowseDialog, self).__init__(*args, **kwargs)
 
         self.button_label = button_label
         self.title = title
@@ -305,9 +306,17 @@ class QBrowseDialog(QtWidgets.QWidget):
             self.root_folder = root_folder
 
         self._browse_layout = QtWidgets.QHBoxLayout()
-        self._path_line_edit = QtWidgets.QLineEdit(parent=self)
+
+        object_name_path = ''
+        object_name_button = ''
+        if objectName:
+            object_name_path    = objectName + '_QLineEdit'
+            object_name_button  = objectName + '_QPushButton'
+
+        self._path_line_edit = QtWidgets.QLineEdit(parent=self, objectName=object_name_path)
         self._path_line_edit.setText(self.root_folder)
-        self._browse_button = QtWidgets.QPushButton(self.button_label, parent=self)
+        self._browse_button = QtWidgets.QPushButton(self.button_label, parent=self, objectName=object_name_button)
+
         if button_align == QtCore.Qt.AlignRight:
             self._browse_layout.addWidget(self._path_line_edit)
             self._browse_layout.addWidget(self._browse_button)
@@ -358,7 +367,7 @@ class QBrowseDialog(QtWidgets.QWidget):
 
 class QBrowseFolder(QBrowseDialog):
     def __init__(self, button_label="Browse", title="Select folder", root_folder=os.getcwd(),
-                 button_align=QtCore.Qt.AlignRight, hide_path_line_edit=False, tooltip=""):
+                 button_align=QtCore.Qt.AlignRight, hide_path_line_edit=False, tooltip="", *args, **kwargs):
         """
         Class constructor
         :param button_label: (str) Text label for the browse button
@@ -368,7 +377,8 @@ class QBrowseFolder(QBrowseDialog):
         :param button_align: (bool) hide the line edit showing the browsed path
         :param tooltip: (str) tooltip for the whole widget
         """
-        super(QBrowseFolder, self).__init__(button_label, title, root_folder, button_align, hide_path_line_edit, tooltip)
+        super(QBrowseFolder, self).__init__(button_label, title, root_folder, button_align, hide_path_line_edit,
+                                            tooltip, *args, **kwargs)
 
     def _open_qfiledialog(self):
         return QtWidgets.QFileDialog.getExistingDirectory(self, self.title, self.root_folder)
@@ -376,7 +386,8 @@ class QBrowseFolder(QBrowseDialog):
 
 class QBrowseFile(QBrowseDialog):
     def __init__(self, button_label="Select", title="Select file", root_folder=os.getcwd(),
-                 button_align=QtCore.Qt.AlignRight, hide_path_line_edit=False, tooltip="", file_types="All (*.*)"):
+                 button_align=QtCore.Qt.AlignRight, hide_path_line_edit=False, tooltip="", file_types="All (*.*)",
+                 *args, **kwargs):
         """
         Class constructor
         :param button_label: (str) Text label for the browse button
@@ -386,7 +397,8 @@ class QBrowseFile(QBrowseDialog):
         :param button_align: (bool) hide the line edit showing the browsed path
         :param tooltip: (str) tooltip for the whole widget
         """
-        super(QBrowseFile, self).__init__(button_label, title, root_folder, button_align, hide_path_line_edit, tooltip)
+        super(QBrowseFile, self).__init__(button_label, title, root_folder, button_align, hide_path_line_edit, tooltip,
+                                          *args, **kwargs)
         self.file_types = file_types
 
     def _open_qfiledialog(self):
@@ -395,7 +407,8 @@ class QBrowseFile(QBrowseDialog):
 
 class QSaveFile(QBrowseDialog):
     def __init__(self, button_label="Save", title="Save file", root_folder=os.getcwd(),
-                 button_align=QtCore.Qt.AlignRight, hide_path_line_edit=False, tooltip="", file_types="All (*.*)"):
+                 button_align=QtCore.Qt.AlignRight, hide_path_line_edit=False, tooltip="", file_types="All (*.*)",
+                 *args, **kwargs):
         """
         Class constructor
         :param button_label: (str) Text label for the browse button
@@ -405,7 +418,8 @@ class QSaveFile(QBrowseDialog):
         :param button_align: (bool) hide the line edit showing the browsed path
         :param tooltip: (str) tooltip for the whole widget
         """
-        super(QSaveFile, self).__init__(button_label, title, root_folder, button_align, hide_path_line_edit, tooltip)
+        super(QSaveFile, self).__init__(button_label, title, root_folder, button_align, hide_path_line_edit, tooltip,
+                                        *args, **kwargs)
         self.file_types = file_types
 
     def _open_qfiledialog(self):
