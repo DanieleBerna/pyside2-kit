@@ -21,16 +21,19 @@ ESCAPED_CHARS_DICT = {"-":  r"\-",
                       ".":  r"\."}
 
 
+def escape_chars_for_css(path):
+    return path.translate(str.maketrans(ESCAPED_CHARS_DICT))
+
+
 class QTexturePalette(QtWidgets.QGroupBox):
     """
     Extends QGroupBox to create a clickable palette.
     A QTexturePalette object is composed by a group and a grid of transparent QPushButton overlaid to an image.
     """
     button_pressed = Signal(str, float, bool, bool, bool)  # Signal emitted when a button is pressed
-    """
-    Signal arguments:
-    (str) palette name, (float) value associated to the button, (bool) is Alt pressed, (bool)is Shift pressed, (bool)is Ctrl pressed
-    """
+    """Signal arguments: (str) palette name, (float) value associated to the button, (bool) is Alt pressed, (bool)is Shift pressed, (bool)is Ctrl pressed """
+
+    image_updated = Signal(str)  # Signal emitted when the image palette is changed, forwarding the image file path
 
     @Slot(float, int)
     def press_button(self, button_value, button_index):
@@ -60,10 +63,8 @@ class QTexturePalette(QtWidgets.QGroupBox):
 
         super(QTexturePalette, self).__init__(palette_name)
 
-        #image_filename = image_filename.replace("\\", "/")  # Needed because path ends in a stylesheet
-        #self.image_filename = image_filename.replace("$", r"\$")  # This is needed to escape characters not allowed in stylesheet URLs (needs a better way!)
-
-        self.image_filename = image_filename.translate(str.maketrans(ESCAPED_CHARS_DICT))  # SHOULD TRY THIS
+        self.image_filename = image_filename
+        self.css_image_filename = escape_chars_for_css(image_filename)
 
         if button_labels_filename is not None:
             button_labels_filename = button_labels_filename.replace("\\",
@@ -140,8 +141,8 @@ class QTexturePalette(QtWidgets.QGroupBox):
 
         self.palette_frame.setAutoFillBackground(True)
         self.palette_frame.setSizePolicy(QtWidgets.QSizePolicy().Expanding, QtWidgets.QSizePolicy().Expanding)
-        print(".QFrame{border-image: url( " + self.image_filename + ") 0 0 0 0 stretch stretch;}")
-        self.palette_frame.setStyleSheet(".QFrame{border-image: url( " + self.image_filename + ") 0 0 0 0 stretch stretch;}")
+        print(".QFrame{border-image: url( " + self.css_image_filename + ") 0 0 0 0 stretch stretch;}")
+        self.palette_frame.setStyleSheet(".QFrame{border-image: url( " + self.css_image_filename + ") 0 0 0 0 stretch stretch;}")
         self.palette_group_layout.setAlignment(QtCore.Qt.AlignCenter)
         self.palette_group_layout.addWidget(self.palette_frame)
         self.setLayout(self.palette_group_layout)
@@ -150,20 +151,28 @@ class QTexturePalette(QtWidgets.QGroupBox):
         if show_image_selector:
             self.image_browser_dialog = QBrowseFile(button_label="Change", title="Select new texture", file_types="Images (*.png)")
             self.palette_group_layout.addWidget(self.image_browser_dialog)
-            self.image_browser_dialog._path_line_edit.setText(image_filename)
+            self.image_browser_dialog.set_browsed_path(image_filename)
+            #self.image_browser_dialog._path_line_edit.setText(image_filename)
             self.image_browser_dialog._path_line_edit.setEnabled(False)
             self.image_browser_dialog.path_browsed.connect(self.update_image)
 
     @Slot(str)
-    def update_image(self, image_filename):
+    def update_image(self, image_filename, forward_signal=False):
         """
         Update the background image of the palette
         :param image_filename: full path and name of the new image
+        :param forward_signal: boolean telling if we need to emit another signal or not
         """
         if image_filename:
+            self.image_browser_dialog.set_browsed_path(image_filename)
             image_filename = image_filename.replace("\\", "/")  # Needed because path ends in a stylesheet
-            self.image_filename = image_filename.replace("$", r"\$")  # This is needed to escape characters not allowed in stylesheet URLs (needs a better way!)
-            self.palette_frame.setStyleSheet(".QFrame{border-image: url( " + self.image_filename + ") 0 0 0 0 stretch stretch;}")
+            self.image_filename = image_filename
+            self.css_image_filename = escape_chars_for_css(image_filename)
+            self.palette_frame.setStyleSheet(".QFrame{border-image: url( " + self.css_image_filename + ") 0 0 0 0 stretch stretch;}")
+
+            """ This is executed only if we need to forward the fact that the image is canghed in order to take extra actions"""
+            if forward_signal:
+                self.image_updated.emit(image_filename)
 
     def update_labels(self, button_labels_filename):
         """
@@ -281,7 +290,7 @@ class QBrowseDialog(QtWidgets.QWidget):
         "browser" widget (like Folder or File/s)
     """
 
-    path_browsed = Signal(str)  # Signal emitted when a path is selected using the dialog
+    path_browsed = Signal(str, bool)  # Signal emitted when a path is selected using the dialog
 
     def __init__(self, button_label="Browse", title="Select", root_folder=os.getcwd(),
                  button_align=QtCore.Qt.AlignRight, hide_path_line_edit=False, tooltip="",
@@ -348,7 +357,7 @@ class QBrowseDialog(QtWidgets.QWidget):
         browsed_path = self._open_qfiledialog()
         if browsed_path:
             self._path_line_edit.setText(browsed_path)
-        self.path_browsed.emit(browsed_path)
+        self.path_browsed.emit(browsed_path, True)
 
     def set_browsed_path(self, new_path):
         """

@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pyside2kit",
-    version="0.0.2",
+    version="0.0.3",
     author="Daniele Bernardini",
     author_email="bdcreations@gmail.com",
     description="A kit of pre-made PySide2 objects for your UIs",
@@ -13,7 +13,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://https://github.com/DanieleBerna/pyside2-kit",
     packages=setuptools.find_packages(),
-    install_requires=["PySide2"],
+    # install_requires=["PySide2"],
 
     # Package Data
     include_package_data=True,
