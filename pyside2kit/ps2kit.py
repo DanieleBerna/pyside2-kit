@@ -31,8 +31,10 @@ class QTexturePalette(QtWidgets.QGroupBox):
     A QTexturePalette object is composed by a group and a grid of transparent QPushButton overlaid to an image.
     """
     button_pressed = Signal(str, float, bool, bool, bool)  # Signal emitted when a button is pressed
-    """Signal arguments: (str) palette name, (float) value associated to the button, (bool) is Alt pressed, (bool)is Shift pressed, (bool)is Ctrl pressed """
-
+    """
+    Signal arguments:
+    (str) palette name, (float) value associated to the button, (bool) is Alt pressed, (bool)is Shift pressed, (bool)is Ctrl pressed
+    """
     image_updated = Signal(str)  # Signal emitted when the image palette is changed, forwarding the image file path
 
     @Slot(float, int)
@@ -63,7 +65,11 @@ class QTexturePalette(QtWidgets.QGroupBox):
 
         super(QTexturePalette, self).__init__(palette_name)
 
+        #image_filename = image_filename.replace("\\", "/")  # Needed because path ends in a stylesheet
+        #self.image_filename = image_filename.replace("$", r"\$")  # This is needed to escape characters not allowed in stylesheet URLs (needs a better way!)
+
         self.image_filename = image_filename
+        #self.css_image_filename =  image_filename.translate(str.maketrans(ESCAPED_CHARS_DICT))  # SHOULD TRY THIS
         self.css_image_filename = escape_chars_for_css(image_filename)
 
         if button_labels_filename is not None:
@@ -151,8 +157,7 @@ class QTexturePalette(QtWidgets.QGroupBox):
         if show_image_selector:
             self.image_browser_dialog = QBrowseFile(button_label="Change", title="Select new texture", file_types="Images (*.png)")
             self.palette_group_layout.addWidget(self.image_browser_dialog)
-            self.image_browser_dialog.set_browsed_path(image_filename)
-            #self.image_browser_dialog._path_line_edit.setText(image_filename)
+            self.image_browser_dialog._path_line_edit.setText(image_filename)
             self.image_browser_dialog._path_line_edit.setEnabled(False)
             self.image_browser_dialog.path_browsed.connect(self.update_image)
 
@@ -161,16 +166,17 @@ class QTexturePalette(QtWidgets.QGroupBox):
         """
         Update the background image of the palette
         :param image_filename: full path and name of the new image
-        :param forward_signal: boolean telling if we need to emit another signal or not
+        :param emit_signal: booloean telling if we need to emit another signal or not
         """
+        print("UPDATING!")
         if image_filename:
             self.image_browser_dialog.set_browsed_path(image_filename)
             image_filename = image_filename.replace("\\", "/")  # Needed because path ends in a stylesheet
             self.image_filename = image_filename
+            #self.css_image_filename = image_filename.translate(str.maketrans(ESCAPED_CHARS_DICT))  # SHOULD TRY THIS
             self.css_image_filename = escape_chars_for_css(image_filename)
+            #self.image_filename = image_filename.replace("$", r"\$")  # This is needed to escape characters not allowed in stylesheet URLs (needs a better way!)
             self.palette_frame.setStyleSheet(".QFrame{border-image: url( " + self.css_image_filename + ") 0 0 0 0 stretch stretch;}")
-
-            """ This is executed only if we need to forward the fact that the image is canghed in order to take extra actions"""
             if forward_signal:
                 self.image_updated.emit(image_filename)
 
