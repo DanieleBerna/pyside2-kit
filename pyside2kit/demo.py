@@ -12,6 +12,10 @@ def random_string(length):
     return ''.join(random.choice(letters) for i in range(length))
 
 
+def popup_button_clicked():
+    ps2kit.PopupDialog("Warning", "This is a special message\njust for you...", "Close")
+
+
 def run_demo():
     app = QtWidgets.QApplication([])
     demo_window = QtWidgets.QWidget()
@@ -19,7 +23,7 @@ def run_demo():
     my_palette = ps2kit.QTexturePalette(palette_name="Test Palette", grid_side=8,
                                          palette_size=800,
                                          image_filename=os.path.join(os.path.dirname(__file__), "resources", "palette_01.png"),
-                                         button_labels_filename=os.path.join(os.path.dirname(__file__), "resources", "labels_01.txt"))
+                                         button_labels_filename=os.path.join(os.path.dirname(__file__), "resources", "_palette_01_labels.txt"))
     demo_layout.addWidget(my_palette)
 
     change_labels_btn = QtWidgets.QPushButton("Change palette labels")
@@ -43,6 +47,10 @@ def run_demo():
     my_file_save = ps2kit.QSaveFile(root_folder="C:\\", tooltip="Save file dialog", file_types="Text Files (*.txt);;All Files (*)")
     my_file_save.title = "My save file dialog"
     demo_layout.addWidget(my_file_save)
+
+    popup_btn = QtWidgets.QPushButton("Open a popup dialog")
+    popup_btn.clicked.connect(popup_button_clicked)
+    demo_layout.addWidget(popup_btn)
 
     demo_window.setLayout(demo_layout)
 

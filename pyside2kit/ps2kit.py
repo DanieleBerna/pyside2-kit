@@ -51,7 +51,7 @@ class QTexturePalette(QtWidgets.QGroupBox):
                                  (QtWidgets.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier),
                                  (QtWidgets.QApplication.keyboardModifiers() == QtCore.Qt.ControlModifier))
 
-    def __init__(self, palette_name="", grid_side=4, palette_size=800, image_filename="", button_labels_filename=None, buttons_tooltip="Tooltip", show_image_selector=True):
+    def __init__(self, palette_name="", grid_side=4, palette_size=800, image_filename="", button_labels_filename="", buttons_tooltip="Tooltip", show_image_selector=True, show_labels_selector=True):
         """
         Setup the palette object generating the QPushButton grid
         :param palette_name: name of the palette: it will shown as group name too
@@ -65,19 +65,15 @@ class QTexturePalette(QtWidgets.QGroupBox):
 
         super(QTexturePalette, self).__init__(palette_name)
 
-        #image_filename = image_filename.replace("\\", "/")  # Needed because path ends in a stylesheet
-        #self.image_filename = image_filename.replace("$", r"\$")  # This is needed to escape characters not allowed in stylesheet URLs (needs a better way!)
-
+        """if not os.path.exists(image_filename):
+            image_filename = os.path.join(os.path.dirname(__file__), "resources", "missing_palette.png")
         self.image_filename = image_filename
-        #self.css_image_filename =  image_filename.translate(str.maketrans(ESCAPED_CHARS_DICT))  # SHOULD TRY THIS
-        self.css_image_filename = escape_chars_for_css(image_filename)
-
-        if button_labels_filename is not None:
-            button_labels_filename = button_labels_filename.replace("\\",
-                                                                    "/")  # Needed because path ends in a stylesheet
+        self.css_image_filename = escape_chars_for_css(image_filename)"""
 
         self.palette_name = palette_name
         self.palette_group_layout = QtWidgets.QVBoxLayout()
+
+        # Palette Frame part
         self.palette_frame = QtWidgets.QFrame()
         self.palette_frame_layout = QtWidgets.QGridLayout()
         self.palette_frame_layout.setSpacing(0)
@@ -85,12 +81,19 @@ class QTexturePalette(QtWidgets.QGroupBox):
         self.palette_frame.setFrameStyle(QtWidgets.QFrame.Box)
         self.palette_frame.setLineWidth(0)
         self.palette_frame.setLayout(self.palette_frame_layout)
+        self.palette_frame.setAutoFillBackground(True)
+        self.palette_frame.setSizePolicy(QtWidgets.QSizePolicy().Expanding, QtWidgets.QSizePolicy().Expanding)
+
+        # Palette Grid of buttons
         self.grid_side = grid_side  # How many buttons per row
         self.grid_step = 1.0 / (self.grid_side * self.grid_side)  # step increment of button values
         self.palette_buttons = []  # list of all QPushButtons
         self.last_pressed_button_index = None
         self.palette_buttons_group = QtWidgets.QButtonGroup()
         self.palette_buttons_group.setExclusive(True)
+
+        self.image_filename = self.css_image_filename = ""
+        self.set_palette_image(image_filename)
 
         # Here a size multiplier is computed for screen resolutions < 4k. Used for scale fonts and widgets
         temp_app = QtWidgets.QApplication.instance()
@@ -101,24 +104,18 @@ class QTexturePalette(QtWidgets.QGroupBox):
         # Initialize button labels list reading labels from a given txt file
         self.button_labels_list = []
         self.button_labels_widgets_list = []
-        self.update_labels(button_labels_filename)
-
-        if button_labels_filename is not None:
-            try:
-                self.button_labels_list = [line.rstrip('\n') for line in open(button_labels_filename)]
-            except IOError:
-                pass
+        #self.read_button_labels_from_file(button_labels_filename)
 
         for i in range(self.grid_side):
             for j in range(self.grid_side):
                 button_value = (self.grid_step * ((j + 1) + (self.grid_side * i) - 1))
-                button_label = ""
+                """button_label = ""
                 try:
                     button_label = self.button_labels_list[((j + 1) + (self.grid_side * i) - 1)]
                 except LookupError:
-                    pass
+                    pass"""
 
-                temp_label = QtWidgets.QLabel(button_label)
+                temp_label = QtWidgets.QLabel("")
                 temp_label.setAlignment(QtCore.Qt.AlignCenter)
 
                 temp_label.setStyleSheet(".QLabel {color: white;font-size: "+str(round(15/self.screen_factor))+"px; border:0px; border-width: 0px}")
@@ -145,59 +142,80 @@ class QTexturePalette(QtWidgets.QGroupBox):
                 temp_btn.clicked.connect(partial(self.press_button, button_value, len(self.palette_buttons)-1))
                 self.palette_buttons_group.addButton(temp_btn)
 
-        self.palette_frame.setAutoFillBackground(True)
-        self.palette_frame.setSizePolicy(QtWidgets.QSizePolicy().Expanding, QtWidgets.QSizePolicy().Expanding)
-        print(".QFrame{border-image: url( " + self.css_image_filename + ") 0 0 0 0 stretch stretch;}")
-        self.palette_frame.setStyleSheet(".QFrame{border-image: url( " + self.css_image_filename + ") 0 0 0 0 stretch stretch;}")
+        """if button_labels_filename:
+            if not os.path.exists(button_labels_filename):
+                button_labels_filename = os.path.join(os.path.dirname(__file__), "resources", "missing_palette_labels.txt")
+            self.button_labels_filename = button_labels_filename
+            self.set_button_labels(button_labels_filename)"""
+        self.button_labels_filename = button_labels_filename
+        self.set_button_labels(button_labels_filename)
+
+        # self.palette_frame.setStyleSheet(".QFrame{border-image: url( " + self.css_image_filename + ") 0 0 0 0 stretch stretch;}")
         self.palette_group_layout.setAlignment(QtCore.Qt.AlignCenter)
         self.palette_group_layout.addWidget(self.palette_frame)
         self.setLayout(self.palette_group_layout)
         self.setSizePolicy(QtWidgets.QSizePolicy().Expanding, QtWidgets.QSizePolicy().Expanding)
 
         if show_image_selector:
-            self.image_browser_dialog = QBrowseFile(button_label="Change", title="Select new texture", file_types="Images (*.png)")
+            self.image_browser_dialog = QBrowseFile(browser_text="Image", button_label="Change", title="Select new texture", file_types="Images (*.png)")
             self.palette_group_layout.addWidget(self.image_browser_dialog)
             self.image_browser_dialog._path_line_edit.setText(image_filename)
             self.image_browser_dialog._path_line_edit.setEnabled(False)
-            self.image_browser_dialog.path_browsed.connect(self.update_image)
+            self.image_browser_dialog.path_browsed.connect(self.set_palette_image)
 
-    @Slot(str)
-    def update_image(self, image_filename, forward_signal=False):
+        if show_labels_selector:
+            self.labels_browser_dialog = QBrowseFile(browser_text="Labels", button_label="Change", title="Select new labels file", file_types="Text Files (*.txt)")
+            self.palette_group_layout.addWidget(self.labels_browser_dialog)
+            self.labels_browser_dialog._path_line_edit.setText(button_labels_filename)
+            self.labels_browser_dialog._path_line_edit.setEnabled(False)
+            self.labels_browser_dialog.path_browsed.connect(self.set_button_labels)
+
+    @Slot(str, bool)
+    def set_palette_image(self, image_filename, forward_signal=False):
         """
         Update the background image of the palette
         :param image_filename: full path and name of the new image
-        :param emit_signal: booloean telling if we need to emit another signal or not
+        :param forward_signal: boolean telling if we need to emit another signal or not
         """
-        print("UPDATING!")
         if image_filename:
-            self.image_browser_dialog.set_browsed_path(image_filename)
+            if not os.path.exists(image_filename):
+                image_filename = os.path.join(os.path.dirname(__file__), "resources", "missing_palette.png")
+            # self.image_browser_dialog.set_browsed_path(image_filename)
             image_filename = image_filename.replace("\\", "/")  # Needed because path ends in a stylesheet
             self.image_filename = image_filename
-            #self.css_image_filename = image_filename.translate(str.maketrans(ESCAPED_CHARS_DICT))  # SHOULD TRY THIS
             self.css_image_filename = escape_chars_for_css(image_filename)
-            #self.image_filename = image_filename.replace("$", r"\$")  # This is needed to escape characters not allowed in stylesheet URLs (needs a better way!)
-            self.palette_frame.setStyleSheet(".QFrame{border-image: url( " + self.css_image_filename + ") 0 0 0 0 stretch stretch;}")
+            self.palette_frame.setStyleSheet(
+                ".QFrame{border-image: url( " + self.css_image_filename + ") 0 0 0 0 stretch stretch;}")
             if forward_signal:
+                print("signal")
                 self.image_updated.emit(image_filename)
 
-    def update_labels(self, button_labels_filename):
+    def _read_button_labels_from_file(self, button_labels_filename):
         """
         Update the buttons' labels
         :param button_labels_filename:
         """
-        if button_labels_filename is not None:
+        if button_labels_filename:
+            if not os.path.exists(button_labels_filename):
+                button_labels_filename = os.path.join(os.path.dirname(__file__), "resources", "missing_palette_labels.txt")
             try:
                 self.button_labels_list = [line.rstrip('\n') for line in open(button_labels_filename)]
             except IOError:
                 pass
 
-    def update_buttons(self, button_labels_filename):
+    def set_button_labels(self, button_labels_filename):
         """
         Update the buttons' labels
         :param button_labels_filename:
         """
-        # TODO
-        pass
+        self._read_button_labels_from_file(button_labels_filename)
+        for i in range(self.grid_side):
+            for j in range(self.grid_side):
+                self.button_labels_widgets_list[((j + 1) + (self.grid_side * i) - 1)].setText("")
+                try:
+                    self.button_labels_widgets_list[((j + 1) + (self.grid_side * i) - 1)].setText(self.button_labels_list[((j + 1) + (self.grid_side * i) - 1)])
+                except LookupError:
+                    pass
 
 
 class QCheckableList(QtWidgets.QWidget):
@@ -298,7 +316,7 @@ class QBrowseDialog(QtWidgets.QWidget):
 
     path_browsed = Signal(str, bool)  # Signal emitted when a path is selected using the dialog
 
-    def __init__(self, button_label="Browse", title="Select", root_folder=os.getcwd(),
+    def __init__(self, browser_text="Label", button_label="Browse", title="Select", root_folder=os.getcwd(),
                  button_align=QtCore.Qt.AlignRight, hide_path_line_edit=False, tooltip="",
                  objectName='', *args, **kwargs):
         """
@@ -312,6 +330,7 @@ class QBrowseDialog(QtWidgets.QWidget):
         """
         super(QBrowseDialog, self).__init__(*args, **kwargs)
 
+        self.browser_text = browser_text
         self.button_label = button_label
         self.title = title
         self.setToolTip(tooltip)
@@ -325,14 +344,17 @@ class QBrowseDialog(QtWidgets.QWidget):
         object_name_path = ''
         object_name_button = ''
         if objectName:
-            object_name_path    = objectName + '_QLineEdit'
-            object_name_button  = objectName + '_QPushButton'
+            object_name_path = objectName + '_QLineEdit'
+            object_name_button = objectName + '_QPushButton'
 
+        self._browser_label = QtWidgets.QLabel(parent=self)
+        self._browser_label.setText(self.browser_text + ": ")
         self._path_line_edit = QtWidgets.QLineEdit(parent=self, objectName=object_name_path)
         self._path_line_edit.setText(self.root_folder)
         self._browse_button = QtWidgets.QPushButton(self.button_label, parent=self, objectName=object_name_button)
 
         if button_align == QtCore.Qt.AlignRight:
+            self._browse_layout.addWidget(self._browser_label)
             self._browse_layout.addWidget(self._path_line_edit)
             self._browse_layout.addWidget(self._browse_button)
 
@@ -381,7 +403,7 @@ class QBrowseDialog(QtWidgets.QWidget):
 
 
 class QBrowseFolder(QBrowseDialog):
-    def __init__(self, button_label="Browse", title="Select folder", root_folder=os.getcwd(),
+    def __init__(self, browser_text="Ciao", button_label="Browse", title="Select folder", root_folder=os.getcwd(),
                  button_align=QtCore.Qt.AlignRight, hide_path_line_edit=False, tooltip="", *args, **kwargs):
         """
         Class constructor
@@ -392,7 +414,7 @@ class QBrowseFolder(QBrowseDialog):
         :param button_align: (bool) hide the line edit showing the browsed path
         :param tooltip: (str) tooltip for the whole widget
         """
-        super(QBrowseFolder, self).__init__(button_label, title, root_folder, button_align, hide_path_line_edit,
+        super(QBrowseFolder, self).__init__(browser_text, button_label, title, root_folder, button_align, hide_path_line_edit,
                                             tooltip, *args, **kwargs)
 
     def _open_qfiledialog(self):
@@ -400,7 +422,7 @@ class QBrowseFolder(QBrowseDialog):
 
 
 class QBrowseFile(QBrowseDialog):
-    def __init__(self, button_label="Select", title="Select file", root_folder=os.getcwd(),
+    def __init__(self, browser_text="Label", button_label="Select", title="Select file", root_folder=os.getcwd(),
                  button_align=QtCore.Qt.AlignRight, hide_path_line_edit=False, tooltip="", file_types="All (*.*)",
                  *args, **kwargs):
         """
@@ -412,7 +434,7 @@ class QBrowseFile(QBrowseDialog):
         :param button_align: (bool) hide the line edit showing the browsed path
         :param tooltip: (str) tooltip for the whole widget
         """
-        super(QBrowseFile, self).__init__(button_label, title, root_folder, button_align, hide_path_line_edit, tooltip,
+        super(QBrowseFile, self).__init__(browser_text, button_label, title, root_folder, button_align, hide_path_line_edit, tooltip,
                                           *args, **kwargs)
         self.file_types = file_types
 
@@ -421,7 +443,7 @@ class QBrowseFile(QBrowseDialog):
 
 
 class QSaveFile(QBrowseDialog):
-    def __init__(self, button_label="Save", title="Save file", root_folder=os.getcwd(),
+    def __init__(self, browser_text="Label", button_label="Save", title="Save file", root_folder=os.getcwd(),
                  button_align=QtCore.Qt.AlignRight, hide_path_line_edit=False, tooltip="", file_types="All (*.*)",
                  *args, **kwargs):
         """
@@ -433,9 +455,34 @@ class QSaveFile(QBrowseDialog):
         :param button_align: (bool) hide the line edit showing the browsed path
         :param tooltip: (str) tooltip for the whole widget
         """
-        super(QSaveFile, self).__init__(button_label, title, root_folder, button_align, hide_path_line_edit, tooltip,
+        super(QSaveFile, self).__init__(browser_text, button_label, title, root_folder, button_align, hide_path_line_edit, tooltip,
                                         *args, **kwargs)
         self.file_types = file_types
 
     def _open_qfiledialog(self):
         return QtWidgets.QFileDialog.getSaveFileName(self, self.title, self.root_folder, self.file_types)[0]
+
+
+class PopupDialog(QtWidgets.QDialog):
+    """
+    A simple modal popup dialog showing a message and a Close button
+    """
+    def __init__(self, title="Popup", message="A message", button_label="Close"):
+        super(PopupDialog, self).__init__()
+        self.setWindowTitle(title)
+
+        popup_layout = QtWidgets.QVBoxLayout()
+        self.text = QtWidgets.QLabel(message)
+        popup_layout.addWidget(self.text)
+
+        close_button = QtWidgets.QPushButton(button_label)
+        popup_layout.addWidget(close_button)
+
+        close_button.clicked.connect(lambda: self.close())
+        self.setLayout(popup_layout)
+
+        self.setFixedHeight(self.sizeHint().height())
+        self.setFixedWidth(self.sizeHint().width())
+
+        self.exec_()
+

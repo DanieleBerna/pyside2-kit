@@ -3,4 +3,4 @@ python setup.py sdist bdist_wheel
 
 poi
 
-rez-pip -i .\dist\pyside2kit-0.0.2-py3-none-any.whl
+rez-pip --python-version 3.9 -i .\dist\pyside2kit-0.0.5-py3-none-any.whl
