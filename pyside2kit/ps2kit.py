@@ -7,9 +7,10 @@ Each object is built on standard PySide2 classes like QWidget.
 """
 
 import os
+import typing
 from functools import partial
 
-from PySide2 import QtWidgets, QtCore
+from PySide2 import QtWidgets, QtCore, QtGui
 from PySide2.QtCore import Signal, Slot
 
 ESCAPED_CHARS_DICT = {"-":  r"\-",
@@ -23,6 +24,40 @@ ESCAPED_CHARS_DICT = {"-":  r"\-",
 
 def escape_chars_for_css(path):
     return path.translate(str.maketrans(ESCAPED_CHARS_DICT))
+
+
+# WORK IN PROGRESS: CUSTOM BUTTON WITH A GENERIC VALUE ATTIBUTE
+class QValueButton(QtWidgets.QPushButton):
+    @typing.overload
+    def __init__(
+            self,
+            value: type,
+            icon: typing.Union[QtGui.QIcon, QtGui.QPixmap],
+            text: str, parent: typing.Optional[QtWidgets.QWidget] = ...,
+    ) -> None:
+        ...
+
+    @typing.overload
+    def __init__(
+            self,
+            value: type,
+            parent: typing.Optional[QtWidgets.QWidget]
+    ) -> None:
+        ...
+
+    @typing.overload
+    def __init__(
+            self,
+            value: type,
+            text: str,
+            parent: typing.Optional[QtWidgets.QWidget]
+    ) -> None:
+        ...
+
+    def __init__(self, value, *args, **kwargs):
+        super(QValueButton, self).__init__(*args, **kwargs)
+        self.value = value
+        self.setCheckable(True)
 
 
 class QTexturePalette(QtWidgets.QGroupBox):
@@ -133,8 +168,8 @@ class QTexturePalette(QtWidgets.QGroupBox):
                 temp_btn.autoRaise = False
                 temp_btn.setStyleSheet(".QPushButton{background-color: transparent;padding: 0px}"
                                        ".QPushButton:hover{background-color: transparent;border-style: inset;border-width: 2px;border-color: blue;}"
-                                       ".QPushButton:pressed{background-color: transparent;border-style: inset;border-width: 3px;border-color: grey;}"
-                                       ".QPushButton:checked{background-color: transparent;border-style: inset;border-width: 1px;border-color: white;}")
+                                       ".QPushButton:pressed{background-color: white;border-style: inset;border-width: 3px;border-color: grey;}"
+                                       ".QPushButton:checked{background-color: transparent;border-style: inset;border-width: 10px;border-color: white;}")
                 temp_btn.setSizePolicy(QtWidgets.QSizePolicy().Expanding, QtWidgets.QSizePolicy().Expanding)
                 self.palette_buttons.append((temp_btn, button_value))
                 temp_btn.setLayout(temp_layout)
@@ -169,6 +204,21 @@ class QTexturePalette(QtWidgets.QGroupBox):
             self.labels_browser_dialog._path_line_edit.setText(button_labels_filename)
             self.labels_browser_dialog._path_line_edit.setEnabled(False)
             self.labels_browser_dialog.path_browsed.connect(self.set_button_labels)
+
+    def _check_button(self, button_index):
+        """
+        Check a specific button of the palette given the button index
+        """
+        self.palette_buttons[button_index][0].setChecked(QtCore.Qt.Checked)
+
+    def check_button_by_value(self, value):
+        """
+        Check a specific button of the palette given the value associated to the button
+        """
+        for i in range(0, len(self.palette_buttons)):
+            if self.palette_buttons[i][1] == value:
+                self._check_button(i)
+                break
 
     @Slot(str, bool)
     def set_palette_image(self, image_filename, forward_signal=False):

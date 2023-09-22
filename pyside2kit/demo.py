@@ -25,6 +25,7 @@ def run_demo():
                                          image_filename=os.path.join(os.path.dirname(__file__), "resources", "palette_01.png"),
                                          button_labels_filename=os.path.join(os.path.dirname(__file__), "resources", "_palette_01_labels.txt"))
     demo_layout.addWidget(my_palette)
+    my_palette.check_button_by_value(0)
 
     change_labels_btn = QtWidgets.QPushButton("Change palette labels")
     demo_layout.addWidget(change_labels_btn)
