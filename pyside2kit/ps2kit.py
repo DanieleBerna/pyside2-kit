@@ -57,7 +57,7 @@ class QValueButton(QtWidgets.QPushButton):
     def __init__(self, value, *args, **kwargs):
         super(QValueButton, self).__init__(*args, **kwargs)
         self.value = value
-        self.setCheckable(True)
+        #self.setCheckable(True)
 
 
 class QTexturePalette(QtWidgets.QGroupBox):
@@ -73,7 +73,7 @@ class QTexturePalette(QtWidgets.QGroupBox):
     image_updated = Signal(str)  # Signal emitted when the image palette is changed, forwarding the image file path
 
     @Slot(float, int)
-    def press_button(self, button_value, button_index):
+    def press_button(self, button_index):
         """
         Slot function connected to the clicked signal of the QPushButtons in the grid.
         It emits another signal to the main application/UI together with all the information about the interaction happened.
@@ -81,12 +81,19 @@ class QTexturePalette(QtWidgets.QGroupBox):
         :param button_index: list index of the pressed button
         """
         self.last_pressed_button_index = button_index  # Needed to highlight the last button
-        self.button_pressed.emit(self.palette_name, button_value,
+        self.button_pressed.emit(self.palette_name, self.palette_buttons[button_index].value,
                                  (QtWidgets.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier),
                                  (QtWidgets.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier),
                                  (QtWidgets.QApplication.keyboardModifiers() == QtCore.Qt.ControlModifier))
 
-    def __init__(self, palette_name="", grid_side=4, palette_size=800, image_filename="", button_labels_filename="", buttons_tooltip="Tooltip", show_image_selector=True, show_labels_selector=True):
+    @Slot(float, int)
+    def press_shortcut_button(self, value):
+        self.button_pressed.emit(self.palette_name, value,
+                                 (QtWidgets.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier),
+                                 (QtWidgets.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier),
+                                 (QtWidgets.QApplication.keyboardModifiers() == QtCore.Qt.ControlModifier))
+
+    def __init__(self, palette_name="", grid_side=4, palette_size=800, image_filename="", button_labels_filename="", buttons_tooltip="Tooltip", show_image_selector=True, show_labels_selector=True, shortcuts=[]):
         """
         Setup the palette object generating the QPushButton grid
         :param palette_name: name of the palette: it will shown as group name too
@@ -159,22 +166,22 @@ class QTexturePalette(QtWidgets.QGroupBox):
                 temp_layout.addWidget(temp_label)
                 temp_label.setWordWrap(True)
                 self.button_labels_widgets_list.append(temp_label)
-                temp_btn = QtWidgets.QPushButton("")
-
+                temp_btn = QValueButton(button_value)
                 temp_btn.setToolTip(buttons_tooltip)
                 temp_btn.setMinimumSize(round(palette_size // grid_side / self.screen_factor), round(palette_size // grid_side / self.screen_factor))
                 temp_btn.setFlat(True)
                 temp_btn.setCheckable(True)
                 temp_btn.autoRaise = False
-                temp_btn.setStyleSheet(".QPushButton{background-color: transparent;padding: 0px}"
-                                       ".QPushButton:hover{background-color: transparent;border-style: inset;border-width: 2px;border-color: blue;}"
-                                       ".QPushButton:pressed{background-color: white;border-style: inset;border-width: 3px;border-color: grey;}"
-                                       ".QPushButton:checked{background-color: transparent;border-style: inset;border-width: 10px;border-color: white;}")
+                temp_btn.setStyleSheet(".QValueButton{background-color: transparent;padding: 0px;}"
+                                       ".QValueButton:hover{background-color: transparent;border-style: solid;border-width: 2px;border-color: blue;}"
+                                       ".QValueButton:pressed{background-color: white;border-style: solid;border-width: 3px;border-color: grey;}"
+                                       ".QValueButton:checked{background-color: transparent;border-style: solid;border-width: 2px;border-color: white;}"
+                                       ".QValueButton:disabled{background-color: #bbbbbb;border-style: solid;border-width: 5px;border-color: #aaaaaa;}")
                 temp_btn.setSizePolicy(QtWidgets.QSizePolicy().Expanding, QtWidgets.QSizePolicy().Expanding)
-                self.palette_buttons.append((temp_btn, button_value))
+                self.palette_buttons.append(temp_btn)
                 temp_btn.setLayout(temp_layout)
                 self.palette_frame_layout.addWidget(temp_btn, i, j, 1, 1)
-                temp_btn.clicked.connect(partial(self.press_button, button_value, len(self.palette_buttons)-1))
+                temp_btn.clicked.connect(partial(self.press_button, len(self.palette_buttons)-1))
                 self.palette_buttons_group.addButton(temp_btn)
 
         """if button_labels_filename:
@@ -191,6 +198,23 @@ class QTexturePalette(QtWidgets.QGroupBox):
         self.setLayout(self.palette_group_layout)
         self.setSizePolicy(QtWidgets.QSizePolicy().Expanding, QtWidgets.QSizePolicy().Expanding)
 
+        self.shortcut_buttons = []
+        if shortcuts:
+            self.shortcuts_group = QtWidgets.QGroupBox("Shortcuts")
+            self.shortcuts_group_layout = QtWidgets.QHBoxLayout()
+            for index in shortcuts:
+                i = index//self.grid_side
+                j = index % self.grid_side
+                value = (self.grid_step * ((j + 1) + (self.grid_side * i) - 1))
+                self.shortcut_buttons.append(QValueButton(value, text=str(value)))
+                self.shortcut_buttons[-1].setCheckable(True)
+                self.shortcut_buttons[-1].autoRaise = False
+                self.shortcuts_group_layout.addWidget(self.shortcut_buttons[-1])
+                self.shortcut_buttons[-1].setStyleSheet(".QValueButton:checked{background-color: transparent;border-style: inset;border-width: 2px;border-color: white;}")
+                self.shortcut_buttons[-1].clicked.connect(partial(self.press_shortcut_button, self.shortcut_buttons[-1].value))
+            self.shortcuts_group.setLayout(self.shortcuts_group_layout)
+            self.palette_group_layout.addWidget(self.shortcuts_group)
+
         if show_image_selector:
             self.image_browser_dialog = QBrowseFile(browser_text="Image", button_label="Change", title="Select new texture", file_types="Images (*.png)")
             self.palette_group_layout.addWidget(self.image_browser_dialog)
@@ -205,20 +229,35 @@ class QTexturePalette(QtWidgets.QGroupBox):
             self.labels_browser_dialog._path_line_edit.setEnabled(False)
             self.labels_browser_dialog.path_browsed.connect(self.set_button_labels)
 
-    def _check_button(self, button_index):
+    def set_shortcuts_labels(self, *args):
+        if self.shortcut_buttons:
+            if len(args) <= len(self.shortcut_buttons):
+                for i in range(len(args)):
+                    self.shortcut_buttons[i].setText(args[i])
+
+    def _check_button(self, button_index, check=True):
         """
         Check a specific button of the palette given the button index
         """
-        self.palette_buttons[button_index][0].setChecked(QtCore.Qt.Checked)
+        if check:
+            self.palette_buttons[button_index].setChecked(QtCore.Qt.Checked)
+        else:
+            self.palette_buttons[button_index].setChecked(QtCore.Qt.Unchecked)
 
     def check_button_by_value(self, value):
         """
         Check a specific button of the palette given the value associated to the button
         """
         for i in range(0, len(self.palette_buttons)):
-            if self.palette_buttons[i][1] == value:
+            if self.palette_buttons[i].value == value:
                 self._check_button(i)
                 break
+        if self.shortcut_buttons:
+            for i in range(0, len(self.shortcut_buttons)):
+                if self.shortcut_buttons[i].isEnabled() and self.shortcut_buttons[i].value == value:
+                    self.shortcut_buttons[i].setChecked(QtCore.Qt.Checked)
+                else:
+                    self.shortcut_buttons[i].setChecked(QtCore.Qt.Unchecked)
 
     @Slot(str, bool)
     def set_palette_image(self, image_filename, forward_signal=False):

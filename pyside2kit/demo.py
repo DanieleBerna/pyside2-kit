@@ -23,9 +23,11 @@ def run_demo():
     my_palette = ps2kit.QTexturePalette(palette_name="Test Palette", grid_side=8,
                                          palette_size=800,
                                          image_filename=os.path.join(os.path.dirname(__file__), "resources", "palette_01.png"),
-                                         button_labels_filename=os.path.join(os.path.dirname(__file__), "resources", "_palette_01_labels.txt"))
+                                         button_labels_filename=os.path.join(os.path.dirname(__file__), "resources", "_palette_01_labels.txt"),
+                                        shortcuts=[0,1,2,3])
     demo_layout.addWidget(my_palette)
     my_palette.check_button_by_value(0)
+    my_palette.set_shortcuts_labels("primo","secondo","terzo")
 
     change_labels_btn = QtWidgets.QPushButton("Change palette labels")
     demo_layout.addWidget(change_labels_btn)
